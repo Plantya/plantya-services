@@ -8,13 +8,11 @@ import com.agrosentinel.auth.model.exception.RegistrationException;
 import com.agrosentinel.auth.repository.AuthRepository;
 import com.agrosentinel.auth.util.AppLogger;
 import com.agrosentinel.auth.util.AuthValidator;
-import com.agrosentinel.auth.util.JwtUtil;
 import com.agrosentinel.auth.util.PasswordUtil;
 import io.quarkus.security.UnauthorizedException;
 import jakarta.enterprise.context.ApplicationScoped;
 import com.agrosentinel.auth.model.entity.User;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.core.NewCookie;
 
 import java.time.LocalDateTime;
 
@@ -113,22 +111,9 @@ public class AuthService {
         return new AppResponse<>("user " + user.getUsername() + " registered", response, LocalDateTime.now());
     }
 
-    public NewCookie createJwtCookie(User user) {
-        String token = JwtUtil.generateToken(
-                user.getId().toString(),
-                user.getUsername(),
-                user.getRole().toString(),
-                8 * 60 * 60 * 1000  // expired 8 jam
-        );
-
-        return new NewCookie.Builder("access_token")
-                .value(token)
-                .path("/")
-                .httpOnly(true)
-                .secure(true)
-                .sameSite(NewCookie.SameSite.STRICT)
-                .maxAge(8 * 60 * 60) // in seconds
-                .build();
+    public AppResponse<String> logout() {
+        AppLogger.info("User logged out");
+        return new AppResponse<>("Logged out successfully", null, LocalDateTime.now());
     }
 
 }
