@@ -17,7 +17,6 @@ import com.agrosentinel.auth.util.PasswordUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import com.agrosentinel.auth.entity.User;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.core.Request;
 
 import java.time.LocalDateTime;
 
@@ -25,11 +24,9 @@ import java.time.LocalDateTime;
 public class AuthService {
 
     private final AuthRepository repository;
-    private final Request request;
 
-    public AuthService(AuthRepository repository, Request request) {
+    public AuthService(AuthRepository repository) {
         this.repository = repository;
-        this.request = request;
     }
 
     public LoginResult login(LoginRequest request) {
