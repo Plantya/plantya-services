@@ -1,4 +1,4 @@
-package com.agrosentinel.auth.util;
+package com.agrosentinel.ingestor.util;
 
 import org.jboss.logging.Logger;
 import org.jboss.logmanager.MDC;

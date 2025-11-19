@@ -1,6 +1,10 @@
 package com.agrosentinel.auth.controller;
 
-import com.agrosentinel.auth.model.dto.*;
+import com.agrosentinel.auth.dto.request.LoginRequest;
+import com.agrosentinel.auth.dto.request.RegisterRequest;
+import com.agrosentinel.auth.dto.response.AppResponse;
+import com.agrosentinel.auth.dto.response.LoginResult;
+import com.agrosentinel.auth.dto.response.RegisterResponse;
 import com.agrosentinel.auth.service.AuthService;
 import com.agrosentinel.auth.service.CookieService;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -21,18 +25,11 @@ public class AuthController {
         this.cookieService = cookieService;
     }
 
-    @GET
-    @Path("/ping")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String ping() {
-        return "pong";
-    }
-
     @POST
     @Path("/login")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response login(LoginRequest request) {
+    public Response login(LoginRequest request) throws Exception {
         LoginResult result = authService.login(request);
         NewCookie cookie = cookieService.createJwtCookie(result.user());
 

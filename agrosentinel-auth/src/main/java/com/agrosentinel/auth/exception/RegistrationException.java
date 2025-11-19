@@ -1,4 +1,4 @@
-package com.agrosentinel.auth.model.exception;
+package com.agrosentinel.auth.exception;
 
 public class RegistrationException extends RuntimeException {
 

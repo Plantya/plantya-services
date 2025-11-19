@@ -1,18 +1,23 @@
 package com.agrosentinel.auth.service;
 
-import com.agrosentinel.auth.model.dto.*;
-import com.agrosentinel.auth.model.exception.BadRequestException;
-import com.agrosentinel.auth.model.exception.InternalServerErrorException;
-import com.agrosentinel.auth.model.exception.InvalidCredentialsException;
-import com.agrosentinel.auth.model.exception.RegistrationException;
+import com.agrosentinel.auth.dto.request.LoginRequest;
+import com.agrosentinel.auth.dto.request.RegisterRequest;
+import com.agrosentinel.auth.dto.response.AppResponse;
+import com.agrosentinel.auth.dto.response.LoginResponse;
+import com.agrosentinel.auth.dto.response.LoginResult;
+import com.agrosentinel.auth.dto.response.RegisterResponse;
+import com.agrosentinel.auth.exception.BadRequestException;
+import com.agrosentinel.auth.exception.InternalServerErrorException;
+import com.agrosentinel.auth.exception.InvalidCredentialsException;
+import com.agrosentinel.auth.exception.RegistrationException;
 import com.agrosentinel.auth.repository.AuthRepository;
-import com.agrosentinel.auth.util.AppLogger;
+import com.agrosentinel.auth.logging.AppLogger;
 import com.agrosentinel.auth.util.AuthValidator;
 import com.agrosentinel.auth.util.PasswordUtil;
-import io.quarkus.security.UnauthorizedException;
 import jakarta.enterprise.context.ApplicationScoped;
-import com.agrosentinel.auth.model.entity.User;
+import com.agrosentinel.auth.entity.User;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.Request;
 
 import java.time.LocalDateTime;
 
@@ -20,9 +25,11 @@ import java.time.LocalDateTime;
 public class AuthService {
 
     private final AuthRepository repository;
+    private final Request request;
 
-    public AuthService(AuthRepository repository) {
+    public AuthService(AuthRepository repository, Request request) {
         this.repository = repository;
+        this.request = request;
     }
 
     public LoginResult login(LoginRequest request) {
@@ -30,7 +37,7 @@ public class AuthService {
             throw new BadRequestException("Invalid login data");
         }
 
-        AppLogger.start("User '" + request.username() + "' attempted to login");
+        AppLogger.start("User '" + request.username() + "' attempted to login", request, request.password().length());
 
         User user;
         try {
@@ -38,28 +45,28 @@ public class AuthService {
 
             user = repository.findOneByUsername(request.username());
             if (user == null) {
-                throw new UnauthorizedException("Invalid username or password");
+                throw new InvalidCredentialsException("Invalid username or password");
             }
 
             boolean isValidPassword = PasswordUtil.verify(request.password(), user.getPassword());
             if (!user.getUsername().equals(request.username()) || !isValidPassword) {
-                throw new UnauthorizedException("Invalid username or password");
+                throw new InvalidCredentialsException("Invalid username or password");
             }
-        } catch (UnauthorizedException | InvalidCredentialsException | RegistrationException e) {
+        } catch (InvalidCredentialsException | RegistrationException e) {
             AppLogger.error("Login failed: " + e.getMessage(), e);
-            AppLogger.end("User '" + request.username() + "' login failed");
+            AppLogger.end("User '" + request.username() + "' login failed", "", 0);
 
-            throw new BadRequestException("Unable to complete login");
+            throw new BadRequestException(e.getMessage());
         } catch (Exception e) {
             AppLogger.error("Unexpected error during login: " + e.getMessage(), e);
-            AppLogger.end("User '" + request.username() + "' login failed");
+            AppLogger.end("User '" + request.username() + "' login failed", "null", 0);
 
             throw new InternalServerErrorException("Unexpected server error");
         }
 
-        AppLogger.end("User '" + request.username() + "' login complete");
-
         LoginResponse response = new LoginResponse(user.getUsername(), user.getEmail(), user.getRole().toString());
+        AppLogger.end("User '" + request.username() + "' login complete", response, request.password().length());
+
         return new LoginResult(
                 new AppResponse<>("user " + user.getUsername() + " logged in", response, LocalDateTime.now()),
                 user
@@ -72,7 +79,7 @@ public class AuthService {
             throw new BadRequestException("Invalid registration data");
         }
 
-        AppLogger.start("User '" + request.username() + "' attempted to register");
+        AppLogger.start("User '" + request.username() + "' attempted to register", request, request.password().length());
 
         User user;
         try {
@@ -88,25 +95,25 @@ public class AuthService {
 
             user = new User(request.username(), request.email(), PasswordUtil.hash(request.password()));
             repository.persist(user);
-        } catch (UnauthorizedException | InvalidCredentialsException | RegistrationException e) {
+        } catch (InvalidCredentialsException | RegistrationException e) {
             AppLogger.error("Registration failed: " + e.getMessage(), e);
-            AppLogger.end("User '" + request.username() + "' registration failed");
+            AppLogger.end("User '" + request.username() + "' registration failed", "", 0);
 
-            throw new BadRequestException("Unable to complete registration");
+            throw new BadRequestException(e.getMessage());
         } catch (Exception e) {
             AppLogger.error("Unexpected error during registration: " + e.getMessage(), e);
-            AppLogger.end("User '" + request.username() + "' registration failed");
+            AppLogger.end("User '" + request.username() + "' registration failed", "", 0);
 
             throw new InternalServerErrorException("Unexpected server error");
         }
 
-        AppLogger.end("User '" + request.username() + "' registration complete");
         RegisterResponse response = new RegisterResponse(
                 user.getUsername(),
                 user.getEmail(),
                 user.getRole().toString(),
                 user.getCreatedAt()
         );
+        AppLogger.end("User '" + request.username() + "' registration complete", response, request.password().length());
 
         return new AppResponse<>("user " + user.getUsername() + " registered", response, LocalDateTime.now());
     }

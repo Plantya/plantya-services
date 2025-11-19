@@ -1,6 +1,6 @@
-package com.agrosentinel.auth.model.entity;
+package com.agrosentinel.auth.entity;
 
-import com.agrosentinel.auth.model.enums.UserRole;
+import com.agrosentinel.auth.enums.UserRole;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 
@@ -14,22 +14,23 @@ public class User extends PanacheEntityBase {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "username", nullable = false, unique = true, length = 50)
     private String username;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "password", nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 10)
     private UserRole role;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     public User() {}

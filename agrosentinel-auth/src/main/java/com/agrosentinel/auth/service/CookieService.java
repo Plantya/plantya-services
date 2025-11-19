@@ -1,6 +1,6 @@
 package com.agrosentinel.auth.service;
 
-import com.agrosentinel.auth.model.entity.User;
+import com.agrosentinel.auth.entity.User;
 import com.agrosentinel.auth.util.JwtUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.core.NewCookie;
@@ -8,7 +8,7 @@ import jakarta.ws.rs.core.NewCookie;
 @ApplicationScoped
 public class CookieService {
 
-    public NewCookie createJwtCookie(User user) {
+    public NewCookie createJwtCookie(User user) throws Exception {
         String token = JwtUtil.generateToken(
                 user.getId().toString(),
                 user.getUsername(),

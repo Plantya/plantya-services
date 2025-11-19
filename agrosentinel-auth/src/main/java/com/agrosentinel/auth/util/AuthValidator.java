@@ -1,9 +1,9 @@
 package com.agrosentinel.auth.util;
 
-import com.agrosentinel.auth.model.dto.LoginRequest;
-import com.agrosentinel.auth.model.dto.RegisterRequest;
-import com.agrosentinel.auth.model.exception.InvalidCredentialsException;
-import com.agrosentinel.auth.model.exception.RegistrationException;
+import com.agrosentinel.auth.dto.request.LoginRequest;
+import com.agrosentinel.auth.dto.request.RegisterRequest;
+import com.agrosentinel.auth.exception.InvalidCredentialsException;
+import com.agrosentinel.auth.exception.RegistrationException;
 import io.quarkus.security.UnauthorizedException;
 
 import java.util.regex.Pattern;

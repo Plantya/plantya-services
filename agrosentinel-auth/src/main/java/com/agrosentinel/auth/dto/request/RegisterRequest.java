@@ -1,4 +1,4 @@
-package com.agrosentinel.auth.model.dto;
+package com.agrosentinel.auth.dto.request;
 
 public record RegisterRequest(
         String username,

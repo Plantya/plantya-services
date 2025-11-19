@@ -1,6 +1,6 @@
 package com.agrosentinel.auth.repository;
 
-import com.agrosentinel.auth.model.entity.User;
+import com.agrosentinel.auth.entity.User;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 

@@ -1,4 +1,4 @@
-package com.agrosentinel.auth.model.enums;
+package com.agrosentinel.auth.enums;
 
 public enum UserRole {
     USER,
