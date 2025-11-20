@@ -49,7 +49,7 @@ public class AuthService {
             if (!user.getUsername().equals(request.username()) || !isValidPassword) {
                 throw new InvalidCredentialsException("Invalid username or password");
             }
-        } catch (InvalidCredentialsException | RegistrationException e) {
+        } catch (InvalidCredentialsException | BadRequestException e) {
             AppLogger.error("Login failed: " + e.getMessage(), e);
             AppLogger.end("User '" + request.username() + "' login failed", "", 0);
 
@@ -92,11 +92,16 @@ public class AuthService {
 
             user = new User(request.username(), request.email(), PasswordUtil.hash(request.password()));
             repository.persist(user);
-        } catch (InvalidCredentialsException | RegistrationException e) {
+        } catch (InvalidCredentialsException | BadRequestException e) {
             AppLogger.error("Registration failed: " + e.getMessage(), e);
             AppLogger.end("User '" + request.username() + "' registration failed", "", 0);
 
             throw new BadRequestException(e.getMessage());
+        } catch (RegistrationException e) {
+            AppLogger.error("Registration failed: " + e.getMessage(), e);
+            AppLogger.end("User '" + request.username() + "' registration failed", "", 0);
+
+            throw new BadRequestException("Invalid registration data");
         } catch (Exception e) {
             AppLogger.error("Unexpected error during registration: " + e.getMessage(), e);
             AppLogger.end("User '" + request.username() + "' registration failed", "", 0);
