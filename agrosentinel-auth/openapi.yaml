@@ -1,0 +1,233 @@
+openapi: 3.0.3
+
+info:
+  title: Auth API
+  version: "1.0.0"
+  description: API autentikasi (login, register, logout) menggunakan snake_case.
+
+servers:
+  - url: http://localhost:8080
+
+tags:
+  - name: Auth
+    description: Endpoint untuk autentikasi user
+
+paths:
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login user
+      description: >
+        Login menggunakan username atau email. 
+        JWT akan dikirim melalui cookie HTTP-only (Set-Cookie).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login berhasil
+          headers:
+            Set-Cookie:
+              description: Cookie JWT hasil login
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppResponseLogin'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Registrasi user baru
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: Registrasi berhasil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppResponseRegister'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout user
+      description: >
+        Logout dilakukan dengan menghapus cookie JWT (Set-Cookie: Max-Age=0).
+      responses:
+        '200':
+          description: Logout berhasil
+          headers:
+            Set-Cookie:
+              description: Cookie JWT dihapus
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppResponseString'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+
+components:
+
+  # ===========================
+  #       SCHEMAS
+  # ===========================
+  schemas:
+
+    # --- REQUESTS (snake_case) ---
+
+    LoginRequest:
+      type: object
+      required: [username_or_email, password]
+      properties:
+        username_or_email:
+          type: string
+          example: "user@example.com"
+        password:
+          type: string
+          example: "password123"
+
+    RegisterRequest:
+      type: object
+      required: [username, email, password, confirm_password]
+      properties:
+        username:
+          type: string
+          example: "newuser"
+        email:
+          type: string
+          example: "newuser@example.com"
+        password:
+          type: string
+          example: "password123"
+        confirm_password:
+          type: string
+          example: "password123"
+
+
+    # --- RESPONSE DATA (snake_case) ---
+
+    LoginResponse:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+
+    RegisterResponse:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+
+    # --- WRAPPER AppResponse<T> ---
+
+    AppResponseBase:
+      type: object
+      required: [message, timestamp]
+      properties:
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    AppResponseLogin:
+      allOf:
+        - $ref: '#/components/schemas/AppResponseBase'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/LoginResponse'
+
+    AppResponseRegister:
+      allOf:
+        - $ref: '#/components/schemas/AppResponseBase'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/RegisterResponse'
+
+    AppResponseString:
+      allOf:
+        - $ref: '#/components/schemas/AppResponseBase'
+        - type: object
+          properties:
+            data:
+              type: string
+              nullable: true
+
+
+    # --- ERROR RESPONSE ---
+
+    ErrorResponse:
+      type: object
+      required: [path, status, message, timestamp]
+      properties:
+        path:
+          type: string
+          example: "/api/auth/login"
+        status:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: "Invalid username or password"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-01-01T10:00:00"
+
+
+  # ===========================
+  #      STANDARD RESPONSES
+  # ===========================
+  responses:
+
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    InternalError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
