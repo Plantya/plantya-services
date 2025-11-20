@@ -10,16 +10,17 @@ import java.util.regex.Pattern;
 
 public class AuthValidator {
 
+    public static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+
     private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{4,20}$");
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,64}$");
 
     public static void login(LoginRequest request) throws InvalidCredentialsException {
-        if (request.username() == null || request.password() == null) {
+        if (request.usernameOrEmail() == null || request.password() == null) {
             throw new UnauthorizedException("Invalid username or password");
         }
 
-        if (request.username().isBlank() || request.password().isBlank()) {
+        if (request.usernameOrEmail().isBlank() || request.password().isBlank()) {
             throw new UnauthorizedException("Invalid username or password");
         }
     }

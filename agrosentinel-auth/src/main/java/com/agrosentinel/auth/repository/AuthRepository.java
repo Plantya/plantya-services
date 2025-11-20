@@ -19,4 +19,8 @@ public class AuthRepository implements PanacheRepository<User> {
         return find("username", username).firstResult();
     }
 
+    public User findOneByEmail(String email) {
+        return find("email", email).firstResult();
+    }
+
 }

@@ -30,39 +30,57 @@ public class AuthService {
     }
 
     public LoginResult login(LoginRequest request) {
+        boolean isLoggedInByEmail = false;
+
         if (request == null) {
             throw new BadRequestException("Invalid login data");
         }
 
-        AppLogger.start("User '" + request.username() + "' attempted to login", request, request.password().length());
+        AppLogger.start("User '" + request.usernameOrEmail() + "' attempted to login", request, request.password().length());
 
         User user;
         try {
             AuthValidator.login(request);
 
-            user = repository.findOneByUsername(request.username());
+            if (AuthValidator.EMAIL_PATTERN.matcher(request.usernameOrEmail()).matches()) {
+                user = repository.findOneByEmail(request.usernameOrEmail());
+                isLoggedInByEmail = true;
+            } else {
+                user = repository.findOneByUsername(request.usernameOrEmail());
+            }
+
             if (user == null) {
-                throw new InvalidCredentialsException("Invalid username or password");
+                throw new InvalidCredentialsException("User not found");
             }
 
             boolean isValidPassword = PasswordUtil.verify(request.password(), user.getPassword());
-            if (!user.getUsername().equals(request.username()) || !isValidPassword) {
-                throw new InvalidCredentialsException("Invalid username or password");
+            if (!isValidPassword) {
+                throw new InvalidCredentialsException("Invalid password");
+            }
+
+            if (isLoggedInByEmail && !user.getEmail().equals(request.usernameOrEmail())) {
+                throw new InvalidCredentialsException(
+                        "Email mismatch. Given:  " + request.usernameOrEmail() + ". Found:  " + user.getEmail()
+                );
+            } else if (!isLoggedInByEmail && !user.getUsername().equals(request.usernameOrEmail())) {
+                throw new InvalidCredentialsException(
+                        "Username mismatch. Given:  " + request.usernameOrEmail() + ". Found:  " + user.getUsername()
+                );
             }
         } catch (InvalidCredentialsException | BadRequestException e) {
             AppLogger.error("Login failed: " + e.getMessage(), e);
-            AppLogger.end("User '" + request.username() + "' login failed", "", 0);
+            AppLogger.end("User '" + request.usernameOrEmail() + "' login failed", "", 0);
 
-            throw new BadRequestException(e.getMessage());
+            throw new BadRequestException("Invalid username or password");
         } catch (Exception e) {
             AppLogger.error("Unexpected error during login: " + e.getMessage(), e);
-            AppLogger.end("User '" + request.username() + "' login failed", "null", 0);
+            AppLogger.end("User '" + request.usernameOrEmail() + "' login failed", "null", 0);
 
             throw new InternalServerErrorException("Unexpected server error");
         }
 
         LoginResponse response = new LoginResponse(user.getUsername(), user.getEmail(), user.getRole().toString());
-        AppLogger.end("User '" + request.username() + "' login complete", response, request.password().length());
+        AppLogger.end("User '" + request.usernameOrEmail() + "' login complete", response, request.password().length());
 
         return new LoginResult(
                 new AppResponse<>("user " + user.getUsername() + " logged in", response, LocalDateTime.now()),
