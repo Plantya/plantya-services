@@ -1,5 +1,6 @@
 #Maven
-agrosentinel-auth/target/
+plantya-auth/target/
+plantya-api/target/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
