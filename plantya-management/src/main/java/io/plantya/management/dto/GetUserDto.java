@@ -9,5 +9,6 @@ public record GetUserDto(
         String email,
         String name,
         UserRole role,
-        Instant createdAt
+        Instant createdAt,
+        Instant updatedAt
 ) {}
