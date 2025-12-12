@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Email;
 import java.time.Instant;
 
 @Entity
-@Table(name = "users.yaml")
+@Table(name = "users")
 public class User extends PanacheEntity {
 
     @Column(name = "user_id")

@@ -20,13 +20,12 @@ import java.util.Collections;
 import java.util.List;
 
 @ApplicationScoped
-@SuppressWarnings("unchecked")
 public class UserRepository implements PanacheRepository<User> {
 
     public List<UserResponse> findActiveUserList() {
         List<UserResponse> list = new ArrayList<>();
 
-        List<User> activeUserList = find("deleted_at IS NULL").list();
+        List<User> activeUserList = find("deletedAt IS NULL").list();
         activeUserList.forEach(u -> {
             list.add(new UserResponse(
                     u.getUserId(),
@@ -44,7 +43,7 @@ public class UserRepository implements PanacheRepository<User> {
     public List<DeletedUserResponse> findDeletedUserList() {
         List<DeletedUserResponse> list = new ArrayList<>();
 
-        List<User> deletedUserList = find("deleted_at IS NOT NULL").list();
+        List<User> deletedUserList = find("deletedAt IS NOT NULL").list();
         deletedUserList.forEach(u -> {
             list.add(new DeletedUserResponse(
                     u.getUserId(),
@@ -61,7 +60,14 @@ public class UserRepository implements PanacheRepository<User> {
     public GetUserDto findUserByUserId (String userId) {
         User user = find("userId", userId).singleResult();
 
-        return new GetUserDto(user.getUserId(), user.getEmail(), user.getName(), user.getRole(), user.getCreatedAt());
+        return new GetUserDto(
+                user.getUserId(),
+                user.getEmail(),
+                user.getName(),
+                user.getRole(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
+        );
     }
 
     public void createUser(User user) {
