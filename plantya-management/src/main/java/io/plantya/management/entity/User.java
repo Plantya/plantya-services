@@ -1,8 +1,11 @@
 package io.plantya.management.entity;
 
+import io.plantya.management.enums.UserRole;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.dialect.type.PostgreSQLEnumJdbcType;
 
 import java.time.Instant;
 
@@ -24,6 +27,7 @@ public class User extends PanacheEntity {
     private String name;
 
     @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
     @Column(name = "role")
     private UserRole role;
 
