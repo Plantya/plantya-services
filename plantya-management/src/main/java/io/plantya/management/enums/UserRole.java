@@ -1,4 +1,4 @@
-package io.plantya.management.entity;
+package io.plantya.management.enums;
 
 public enum UserRole {
     USER,
