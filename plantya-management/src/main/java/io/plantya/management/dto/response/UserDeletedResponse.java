@@ -1,14 +1,13 @@
-package io.plantya.management.dto;
+package io.plantya.management.dto.response;
 
-import io.plantya.management.entity.UserRole;
+import io.plantya.management.enums.UserRole;
 
 import java.time.Instant;
 
-public record DeletedUserDto(
+public record UserDeletedResponse(
         String userId,
         String email,
         String name,
         UserRole role,
         Instant deletedAt
-) {
-}
+) {}

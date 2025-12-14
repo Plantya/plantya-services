@@ -1,6 +1,6 @@
 package io.plantya.management.dto.response;
 
-import io.plantya.management.entity.UserRole;
+import io.plantya.management.enums.UserRole;
 
 import java.time.Instant;
 
