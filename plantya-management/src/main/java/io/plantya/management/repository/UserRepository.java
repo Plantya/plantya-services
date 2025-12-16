@@ -140,6 +140,7 @@ public class UserRepository implements PanacheRepository<User> {
     private String searchClause() {
         return """
         AND (
+            LOWER(userId) LIKE ?1 OR
             LOWER(email) LIKE ?1 OR
             LOWER(name) LIKE ?1 OR
             LOWER(CAST(role AS text)) LIKE ?1
