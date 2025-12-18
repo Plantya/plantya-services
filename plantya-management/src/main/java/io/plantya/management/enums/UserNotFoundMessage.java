@@ -1,18 +1,26 @@
 package io.plantya.management.enums;
 
-public enum UserNotFoundMessage {
+public enum UserNotFoundMessage implements ApiError {
 
-    USER_NOT_FOUND("user not found"),
-    USER_DELETED_NOT_FOUND("deleted user not found");
+    USER_NOT_FOUND("USER_NOT_FOUND", "user not found"),
+    USER_DELETED_NOT_FOUND("USER_DELETED_NOT_FOUND", "deleted user not found");
 
-    private final String message;
+    private final String code;
+    private final String defaultDetail;
 
-    UserNotFoundMessage(String message) {
-        this.message = message;
+    UserNotFoundMessage(String code, String defaultDetail) {
+        this.code = code;
+        this.defaultDetail = defaultDetail;
     }
 
-    public String getMessage() {
-        return message;
+    @Override
+    public String getCode() {
+        return code;
+    }
+
+    @Override
+    public String getDefaultDetail() {
+        return defaultDetail;
     }
 
 }
