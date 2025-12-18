@@ -20,11 +20,6 @@ public class UserRepository implements PanacheRepository<User> {
         return count(spec.query, spec.params);
     }
 
-
-    public long countDeletedUser() {
-        return count("deletedAt IS NOT NULL");
-    }
-
     public List<UserResponse> findAllActive(
             int page,
             int size,
@@ -56,23 +51,6 @@ public class UserRepository implements PanacheRepository<User> {
                 .toList();
     }
 
-    public List<UserDeletedResponse> findDeletedUserList() {
-        List<UserDeletedResponse> list = new ArrayList<>();
-
-        List<User> deletedUserList = find("deletedAt IS NOT NULL").list();
-        deletedUserList.forEach(u -> {
-            list.add(new UserDeletedResponse(
-                    u.getUserId(),
-                    u.getEmail(),
-                    u.getName(),
-                    u.getRole(),
-                    u.getDeletedAt()
-            ));
-        });
-
-        return list;
-    }
-
     public UserResponse findById(String userId) {
         User user = find("userId", userId).singleResult();
 
@@ -90,6 +68,27 @@ public class UserRepository implements PanacheRepository<User> {
         persist(user);
     }
 
+    public long countDeletedUser() {
+        return count("deletedAt IS NOT NULL");
+    }
+
+    public List<UserDeletedResponse> findDeletedUserList() {
+        List<UserDeletedResponse> list = new ArrayList<>();
+
+        List<User> deletedUserList = find("deletedAt IS NOT NULL").list();
+        deletedUserList.forEach(u -> {
+            list.add(new UserDeletedResponse(
+                    u.getUserId(),
+                    u.getEmail(),
+                    u.getName(),
+                    u.getRole(),
+                    u.getDeletedAt()
+            ));
+        });
+
+        return list;
+    }
+
     public UserDeletedResponse findDeletedUserByUserId (String userId) {
         User user = find("userId = :userId AND deletedAt IS NOT NULL", Parameters.with("userId", userId))
                 .singleResult();
@@ -101,6 +100,10 @@ public class UserRepository implements PanacheRepository<User> {
                 user.getRole(),
                 user.getDeletedAt()
         );
+    }
+
+    public void softDelete(String userId) {
+        delete("userId = :userId", Parameters.with("userId", userId));
     }
 
     // ===== HELPER =====
