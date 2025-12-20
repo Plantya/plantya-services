@@ -1,5 +1,7 @@
 package io.plantya.management.enums;
 
+import io.plantya.management.exception.ApiError;
+
 public enum UserErrorMessage implements ApiError {
 
     USER_FIELD_REQUIRED(

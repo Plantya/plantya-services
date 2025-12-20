@@ -1,5 +1,7 @@
 package io.plantya.management.enums;
 
+import io.plantya.management.exception.ApiError;
+
 public enum UserBadRequestMessage implements ApiError {
 
     USER_ORDER_INVALID(

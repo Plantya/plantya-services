@@ -1,7 +1,5 @@
 package io.plantya.management.exception;
 
-import io.plantya.management.enums.ApiError;
-
 public abstract class ApiException extends RuntimeException {
 
     private final ApiError error;

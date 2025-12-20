@@ -1,5 +1,7 @@
 package io.plantya.management.enums;
 
+import io.plantya.management.exception.ApiError;
+
 public enum UserNotFoundMessage implements ApiError {
 
     USER_NOT_FOUND("USER_NOT_FOUND", "user not found"),
