@@ -1,0 +1,39 @@
+name: CD - Deploy Plantya Management (Dev)
+
+on:
+  push:
+    branches: ["dev"]
+    paths:
+      - "plantya-management/**"
+      - ".github/workflows/cd-dev.yaml"
+
+jobs:
+  deploy:
+    name: Deploy to Kubernetes (Dev)
+    runs-on: ubuntu-22.04
+
+    env:
+      NAMESPACE: plantya-dev
+      SERVICE_NAME: plantya-management
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: "v1.29.0"
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_DEV }}" > ~/.kube/config
+
+      - name: Deploy Kubernetes manifests
+        run: |
+          kubectl apply -f plantya-management/kubernetes/ -n plantya-dev
+
+      - name: Verify rollout
+        run: |
+          kubectl rollout status deployment/$SERVICE_NAME -n plantya-dev
