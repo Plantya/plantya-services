@@ -1,7 +1,12 @@
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
-    user_id VARCHAR(255) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
+    user_id VARCHAR(16) UNIQUE NOT NULL DEFAULT
+        (
+            CONCAT(
+                SUBSTRING(role::text, 1, 1),
+                LPAD(nextval('user_code_seq')::text, 5, '0')
+            )
+        ),    email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255),
     name VARCHAR(255),
     role user_role NOT NULL DEFAULT 'USER',
@@ -18,3 +23,7 @@ CREATE INDEX IF NOT EXISTS idx_users_email
 
 CREATE INDEX IF NOT EXISTS idx_users_deleted_at
     ON users(deleted_at);
+
+CREATE INDEX IF NOT EXISTS idx_users_active
+    ON users(id)
+    WHERE deleted_at IS NULL;
