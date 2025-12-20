@@ -15,6 +15,7 @@ import io.plantya.management.exception.NotFoundException;
 import io.plantya.management.repository.UserRepository;
 import io.plantya.management.common.mapper.ResponseMapper;
 import io.plantya.management.common.validator.UserManagementValidator;
+import io.plantya.management.repository.UserSequenceRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.jboss.logging.Logger;
@@ -34,10 +35,16 @@ public class UserService {
 
     private final UserManagementValidator validator;
     private final UserRepository repository;
+    private final UserSequenceRepository sequenceRepository;
 
-    public UserService(UserManagementValidator validator, UserRepository repository) {
+    public UserService(
+            UserManagementValidator validator,
+            UserRepository repository,
+            UserSequenceRepository sequenceRepository
+    ) {
         this.validator = validator;
         this.repository = repository;
+        this.sequenceRepository = sequenceRepository;
     }
 
     /**
@@ -209,8 +216,8 @@ public class UserService {
 
         validator.validateCreateRequest(request);
 
-        long lastIndex = repository.getLastUserIndex().orElse(0L);
-        String userId = UserGeneratorUtil.generateUserId(request.role(), lastIndex);
+        long index = sequenceRepository.nextIndex();
+        String userId = UserGeneratorUtil.generateUserId(request.role(), index);
 
         String password = UserGeneratorUtil.generateDefaultPassword(userId);
 

@@ -15,6 +15,7 @@ import io.plantya.management.exception.ConflictException;
 import io.plantya.management.exception.NotFoundException;
 import io.plantya.management.repository.UserRepository;
 import io.plantya.management.common.validator.UserManagementValidator;
+import io.plantya.management.repository.UserSequenceRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -41,7 +42,10 @@ class UserServiceTest {
 
     @Mock
     private UserManagementValidator validator;
-    
+
+    @Mock
+    private UserSequenceRepository sequenceRepository;
+
     @InjectMocks
     private UserService userService;
 
@@ -85,7 +89,7 @@ class UserServiceTest {
         @Test
         @DisplayName("Should return paginated active users when parameters are valid")
         void findAllActive_withValidParameters_returnsExpectedResponse() {
-            var userService = new UserService(validator, repository);
+            var userService = new UserService(validator, repository, sequenceRepository);
 
             var userList = List.of(
                     new UserResponse("U001", "user1@domain.com", "User One", UserRole.USER, Instant.now(), Instant.now()),
@@ -115,7 +119,7 @@ class UserServiceTest {
         @Test
         @DisplayName("Should throw BadRequestException when pagination parameters are invalid or incomplete")
         void findAllActive_withInvalidPagination_throwsBadRequestException() {
-            var userService = new UserService(validator, repository);
+            var userService = new UserService(validator, repository, sequenceRepository);
 
             BadRequestException thrownException = assertThrows(
                     BadRequestException.class,
@@ -141,7 +145,7 @@ class UserServiceTest {
         @Test
         @DisplayName("Should throw IllegalArgumentException when order parameter is invalid")
         void findAllActive_withInvalidOrder_throwsIllegalArgumentException() {
-            var userService = new UserService(validator, repository);
+            var userService = new UserService(validator, repository, sequenceRepository);
 
             BadRequestException thrownException = assertThrows(
                     BadRequestException.class,
@@ -154,7 +158,7 @@ class UserServiceTest {
         @Test
         @DisplayName("Should return empty result when no active users found")
         void findAllActive_withEmptyResult_returnsEmptyList() {
-            var userService = new UserService(validator, repository);
+            var userService = new UserService(validator, repository, sequenceRepository);
 
             when(repository.countActiveUsers(null, null)).thenReturn(0L);
             when(repository.findAllActive(null, null, null, null, null, null))
@@ -198,7 +202,7 @@ class UserServiceTest {
 
                 // verify never: no side effect
                 verify(validator, never()).validateCreateRequest(any());
-                verify(repository, never()).getLastUserIndex();
+                verify(sequenceRepository, never()).nextIndex();
                 verify(repository, never()).createUser(any());
             }
 
@@ -211,7 +215,7 @@ class UserServiceTest {
                         UserRole.USER
                 );
 
-                when(repository.getLastUserIndex()).thenReturn(Optional.of(1L));
+                when(sequenceRepository.nextIndex()).thenReturn(1L);
 
                 // when
                 UserCreatedResponse response = userService.createUser(request);
@@ -246,7 +250,7 @@ class UserServiceTest {
                         role
                 );
 
-                when(repository.getLastUserIndex()).thenReturn(Optional.of(12L));
+                when(sequenceRepository.nextIndex()).thenReturn(12L);
 
                 userService.createUser(request);
 
@@ -265,7 +269,7 @@ class UserServiceTest {
                         UserRole.USER
                 );
 
-                when(repository.getLastUserIndex()).thenReturn(Optional.of(1L));
+                when(sequenceRepository.nextIndex()).thenReturn(1L);
                 doThrow(new RuntimeException("DB error"))
                         .when(repository).createUser(any(User.class));
 
@@ -286,7 +290,7 @@ class UserServiceTest {
                         UserRole.ADMIN
                 );
 
-                when(repository.getLastUserIndex()).thenReturn(Optional.of(99999L));
+                when(sequenceRepository.nextIndex()).thenReturn(99999L);
 
                 userService.createUser(request);
 
@@ -305,7 +309,7 @@ class UserServiceTest {
                         UserRole.USER
                 );
 
-                when(repository.getLastUserIndex()).thenReturn(Optional.of(1L));
+                when(sequenceRepository.nextIndex()).thenReturn(1L);
 
                 userService.createUser(request);
 

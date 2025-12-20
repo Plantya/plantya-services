@@ -28,12 +28,6 @@ public class UserRepository implements PanacheRepository<User> {
         return count("email = :email", Parameters.with("email", email)) > 0;
     }
 
-    public Optional<Long> getLastUserIndex() {
-        return find("SELECT MAX(u.id) FROM User u")
-                .project(Long.class)
-                .firstResultOptional();
-    }
-
     public void createUser(User user) {
         persist(user);
     }

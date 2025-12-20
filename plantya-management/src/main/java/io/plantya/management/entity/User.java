@@ -13,11 +13,11 @@ import java.time.Instant;
 @Table(name = "users")
 public class User extends PanacheEntity {
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false, unique = true)
     private String userId;
 
     @Email
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
 
     @Column(name = "password")
