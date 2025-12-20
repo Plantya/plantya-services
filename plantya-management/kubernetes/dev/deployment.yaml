@@ -16,8 +16,8 @@ spec:
         app: plantya-management
     spec:
       containers:
-        - name: user-service
-          image: user-service:latest
+        - name: plantya-management
+          image: registry.digitalocean.com/plantya-registry/plantya-management:dev
           ports:
             - containerPort: 8080
           envFrom:
