@@ -27,8 +27,6 @@ import static io.plantya.management.enums.UserErrorMessage.USER_ALREADY_ACTIVE;
 import static io.plantya.management.enums.UserErrorMessage.USER_ALREADY_DELETED;
 import static io.plantya.management.enums.UserNotFoundMessage.USER_NOT_FOUND;
 
-import static io.plantya.management.enums.UserBadRequestMessage.USER_INVALID_REQUEST_PAYLOAD;
-
 @ApplicationScoped
 public class UserService {
 
