@@ -2,6 +2,11 @@ package io.plantya.management.enums;
 
 public enum UserBadRequestMessage implements ApiError {
 
+    USER_ORDER_INVALID(
+            "USER_ORDER_INVALID",
+            "invalid order value"
+    ),
+
     USER_PAGINATION_PARAMETER_INCOMPLETE(
             "USER_PAGINATION_PARAMETER_INCOMPLETE",
             "page and size query parameters must be specified together"
