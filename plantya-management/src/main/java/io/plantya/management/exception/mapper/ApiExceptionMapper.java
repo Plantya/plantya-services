@@ -24,14 +24,18 @@ public class ApiExceptionMapper implements ExceptionMapper<ApiException> {
         Response.Status status = getStatus(e);
 
         if (status == Response.Status.INTERNAL_SERVER_ERROR) {
-            LOG.error("Unhandled API exception", e);
+            LOG.errorf(
+                    "event=system_exception status=500 path=%s",
+                    uriInfo.getPath()
+            );
+            LOG.error("stacktrace", e);
         } else {
             LOG.warnf(
-                    "Business exception | status=%d | code=%s | message=%s | path=%s",
+                    "event=business_exception status=%d code=%s path=%s message=\"%s\"",
                     status.getStatusCode(),
                     e.getError().getCode(),
-                    e.getDetail(),
-                    uriInfo.getPath()
+                    uriInfo.getPath(),
+                    e.getDetail()
             );
         }
 
