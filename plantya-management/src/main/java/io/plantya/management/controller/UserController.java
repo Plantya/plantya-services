@@ -1,9 +1,8 @@
 package io.plantya.management.controller;
 
+import io.plantya.management.dto.request.UserPatchRequest;
 import io.plantya.management.dto.request.UserRequest;
-import io.plantya.management.dto.response.ListUserResponse;
-import io.plantya.management.dto.response.UserCreatedResponse;
-import io.plantya.management.dto.response.UserResponse;
+import io.plantya.management.dto.response.*;
 import io.plantya.management.enums.UserRole;
 import io.plantya.management.service.UserService;
 import jakarta.ws.rs.*;
@@ -48,47 +47,62 @@ public class UserController {
     @GET
     @Path("/{userId}")
     public Response findById(@PathParam("userId") String userId) {
-        UserResponse user = service.findById(userId);
+        Object user = service.findById(userId);
 
         return Response.status(Response.Status.OK)
                 .entity(user)
                 .build();
     }
 
-    @PUT
-    @Path("/{userId}")
-    public Response replaceUser(@PathParam("userId") String userId) {
-        return Response.ok().build();
-    }
-
     @PATCH
     @Path("/{userId}")
-    public Response updateFields(@PathParam("userId") String userId) {
-        return Response.ok().build();
+    public Response updateFields(@PathParam("userId") String userId, UserPatchRequest request) {
+        UserUpdatedResponse response = service.patchUser(userId, request);
+        return Response.ok()
+                .entity(response)
+                .build();
     }
 
     @DELETE
     @Path("/{userId}")
     public Response delete(@PathParam("userId") String userId) {
+        service.deleteUser(userId);
         return Response.noContent().build();
     }
 
     @POST
     @Path("/{userId}/restore")
     public Response restoreUser(@PathParam("userId") String userId) {
-        return Response.ok().build();
+        UserResponse response = service.restoreUser(userId);
+        return Response.ok()
+                .entity(response)
+                .build();
     }
 
     @GET
     @Path("/deleted")
-    public Response findAllDeleted() {
-        return Response.ok().build();
+    public Response findAllDeleted(
+            @QueryParam("page") Integer page,
+            @QueryParam("size") Integer size,
+            @QueryParam("sort") String sort,
+            @QueryParam("order") String order,
+            @QueryParam("search") String search,
+            @QueryParam("role") UserRole role
+    ) {
+        ListUserResponse<UserDeletedResponse> response = service.findAllDeleted(page, size, sort, order, search, role);
+
+        return Response.status(Response.Status.OK)
+                .entity(response)
+                .build();
     }
 
     @GET
     @Path("/deleted/{userId}")
     public Response findDeletedById(@PathParam("userId") String userId) {
-        return Response.ok().build();
+        UserDeletedResponse response = service.findDeletedById(userId);
+        return Response.status(Response.Status.OK)
+                .entity(response)
+                .build();
     }
 
 }
