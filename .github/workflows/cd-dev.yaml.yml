@@ -38,8 +38,8 @@ jobs:
 
       - name: Deploy Kubernetes manifests
         run: |
-          kubectl apply -f plantya-management/kubernetes/ -n $NAMESPACE
+          kubectl apply -f plantya-management/kubernetes/ -n plantya-dev
 
       - name: Verify rollout
         run: |
-          kubectl rollout status deployment/$SERVICE_NAME -n $NAMESPACE
+          kubectl rollout status deployment/plantya-management -n plantya-dev
