@@ -1,10 +1,16 @@
-name: Java CI with Maven
+name: Plantya Management CI
 
 on:
   push:
-    branches: [ "master", "dev" ]
+    branches: ["dev"]
+    paths:
+      - "plantya-management/**"
+      - ".github/workflows/ci-plantya-management-dev.yaml"
   pull_request:
-    branches: [ "master", "dev" ]
+    branches: ["dev"]
+    paths:
+      - "plantya-management/**"
+      - ".github/workflows/ci-plantya-management-dev.yaml"
 
 jobs:
   build:
@@ -12,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      QUARKUS_DEV_SERVICES_ENABLED: false
+      QUARKUS_DEV_SERVICES_ENABLED: "false"
 
     steps:
       - name: Checkout source code
@@ -22,10 +28,11 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
           cache: maven
 
       - name: Build and run tests
+        working-directory: plantya-management
         run: mvn -B clean verify
 
       - name: Upload test report (on failure)
@@ -34,5 +41,5 @@ jobs:
         with:
           name: test-reports
           path: |
-            target/surefire-reports
-            target/failsafe-reports
+            plantya-management/target/surefire-reports
+            plantya-management/target/failsafe-reports
