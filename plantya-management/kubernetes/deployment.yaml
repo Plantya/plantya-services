@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plantya-management
+  labels:
+    app: plantya-management
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plantya-management
+  template:
+    metadata:
+      name: plantya-management
+      labels:
+        app: plantya-management
+    spec:
+      containers:
+        - name: user-service
+          image: user-service:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: plantya-management-config-map
+            - secretRef:
+                name: plantya-management-secret
+
+      
