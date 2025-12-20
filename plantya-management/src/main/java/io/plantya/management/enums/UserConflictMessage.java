@@ -1,5 +1,7 @@
 package io.plantya.management.enums;
 
+import io.plantya.management.exception.ApiError;
+
 public enum UserConflictMessage implements ApiError {
 
     USER_EMAIL_ALREADY_EXISTS("USER_EMAIL_ALREADY_EXISTS", "email is already in use"),

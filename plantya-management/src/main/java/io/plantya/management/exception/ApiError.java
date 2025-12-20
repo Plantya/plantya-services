@@ -1,4 +1,4 @@
-package io.plantya.management.enums;
+package io.plantya.management.exception;
 
 public interface ApiError {
     String getCode();
