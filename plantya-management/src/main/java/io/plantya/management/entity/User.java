@@ -55,11 +55,6 @@ public class User extends PanacheEntity {
         this.updatedAt = Instant.now();
     }
 
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = Instant.now();
-    }
-
     // <<<<< GETTER >>>>>
     public String getUserId() {
         return userId;
@@ -67,6 +62,10 @@ public class User extends PanacheEntity {
 
     public String getEmail() {
         return email;
+    }
+
+    public String getHashedPassword() {
+        return hashedPassword;
     }
 
     public String getName() {
@@ -112,6 +111,14 @@ public class User extends PanacheEntity {
 
     public void setDeletedAt(Instant deletedAt) {
         this.deletedAt = deletedAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     @Override

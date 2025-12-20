@@ -2,7 +2,7 @@ package io.plantya.management.dto.request;
 
 import io.plantya.management.enums.UserRole;
 
-public class PatchUserRequest {
+public class UserPatchRequest {
     String email;
     String name;
     UserRole role;

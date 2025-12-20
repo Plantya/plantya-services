@@ -1,13 +1,15 @@
-package io.plantya.management.util;
+package io.plantya.management.common.validator;
 
-import io.plantya.management.dto.request.PatchUserRequest;
+import io.plantya.management.dto.request.UserPatchRequest;
 import io.plantya.management.dto.request.UserRequest;
 import io.plantya.management.exception.BadRequestException;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.regex.Pattern;
 
 import static io.plantya.management.enums.UserBadRequestMessage.*;
 
+@ApplicationScoped
 public class UserManagementValidator {
 
     /**
@@ -58,7 +60,7 @@ public class UserManagementValidator {
      * @param request patch user request payload
      * @throws BadRequestException if validation fails
      */
-    public void validatePatchRequest(PatchUserRequest request) {
+    public void validatePatchRequest(UserPatchRequest request) {
         if (request == null) {
             throw new BadRequestException(USER_INVALID_REQUEST_PAYLOAD);
         }
@@ -96,7 +98,7 @@ public class UserManagementValidator {
      * @param request patch user request payload
      * @return true if at least one field is provided, false otherwise
      */
-    private boolean hasAnyUpdatableField(PatchUserRequest request) {
+    private boolean hasAnyUpdatableField(UserPatchRequest request) {
         return request.getEmail() != null ||
                 request.getName() != null ||
                 request.getRole() != null ||
@@ -111,7 +113,7 @@ public class UserManagementValidator {
      * @param request patch user request payload
      * @throws BadRequestException if any provided field is invalid
      */
-    private void validatePatchFields(PatchUserRequest request) {
+    private void validatePatchFields(UserPatchRequest request) {
         if (request.getEmail() != null) {
             validateEmail(request.getEmail());
         }
@@ -136,7 +138,7 @@ public class UserManagementValidator {
      * the minimum length requirement.
      *
      * @param password password value to validate
-     * @throws BadRequestException if password is invalid
+     * @throws BadRequestException if the password is invalid
      */
     private void validatePassword(String password) {
         if (password.isBlank() || password.length() < 8) {

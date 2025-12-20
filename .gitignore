@@ -1,6 +1,5 @@
 #Maven
-plantya-auth/target/
-plantya-api/target/
+*/target/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
