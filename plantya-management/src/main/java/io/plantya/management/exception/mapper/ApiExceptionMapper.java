@@ -24,9 +24,15 @@ public class ApiExceptionMapper implements ExceptionMapper<ApiException> {
         Response.Status status = getStatus(e);
 
         if (status == Response.Status.INTERNAL_SERVER_ERROR) {
-            LOG.error("Internal server error occurred", e);
+            LOG.error("Unhandled API exception", e);
         } else {
-            LOG.errorf("API exception: %s - %s", e.getError().getCode(), e.getDetail());
+            LOG.warnf(
+                    "Business exception | status=%d | code=%s | message=%s | path=%s",
+                    status.getStatusCode(),
+                    e.getError().getCode(),
+                    e.getDetail(),
+                    uriInfo.getPath()
+            );
         }
 
         ErrorResponse response = new ErrorResponse(
