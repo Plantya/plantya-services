@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      IMAGE_NAME: registry.digitalocean.com/plantya-registry
+      IMAGE_NAME: registry.digitalocean.com/plantya-registry/plantya-management
       IMAGE_TAG: dev
 
     steps:
