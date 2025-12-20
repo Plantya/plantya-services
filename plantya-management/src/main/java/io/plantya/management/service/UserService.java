@@ -325,3 +325,40 @@ public class UserService {
     }
 
 }
+
+/*
+    Class Layer:
+    - TODO: Reduce responsibilities of UserService (validation, mapping, ID/password generation)
+    - TODO: Introduce dedicated mapper (UserMapper) to avoid manual entity-to-response conversion
+    - TODO: Add comprehensive unit tests before performing structural refactor
+
+    findAllActive:
+    - TODO: Refactor pagination, sorting, and filtering parameters into value objects
+    - TODO: Extract validation logic (paging & order) into private methods
+    - TODO: Reduce cyclomatic complexity by splitting paging and non-paging flows
+    - TODO: Unify repository findAllActive signatures to avoid duplicated query logic
+    - TODO: Replace String-based order parameter with enum for type safety
+
+    findById:
+    - TODO: Move entity-to-response mapping to a dedicated mapper
+    - TODO: Consider returning Optional at service boundary if future use cases require it
+
+    patchUser:
+    - TODO: Add explicit validation method for patch request (e.g., empty patch, invalid fields)
+    - TODO: Replace boolean isUpdated flag with request-level emptiness check
+    - TODO: Centralize deleted-user check logic to avoid duplication across service methods
+
+    createUser:
+    - TODO: Move userId generation logic to a dedicated generator or repository-level concern
+    - TODO: Remove hardcoded default password format and delegate to password policy component
+    - TODO: Rely on database unique constraint for email and map persistence exception to ConflictException
+    - TODO: Add transactional test to cover concurrent user creation edge cases
+
+    deleteUser:
+    - TODO: Extract common "active user" retrieval logic into private helper method
+    - TODO: Consider returning response object for delete operation for consistency
+
+    Cross-Cutting:
+    - TODO: Standardize exception types for all client-facing validation errors
+    - TODO: Centralize error messages into a single error contract for API consistency
+ */

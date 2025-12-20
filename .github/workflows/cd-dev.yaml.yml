@@ -28,7 +28,13 @@ jobs:
       - name: Configure kubeconfig
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG_DEV }}" > ~/.kube/config
+          cat <<EOF > ~/.kube/config
+          ${{ secrets.KUBECONFIG_DEV }}
+          EOF
+
+      - name: Verify cluster access
+        run: |
+          kubectl cluster-info
 
       - name: Deploy Kubernetes manifests
         run: |
@@ -36,4 +42,4 @@ jobs:
 
       - name: Verify rollout
         run: |
-          kubectl rollout status deployment/$SERVICE_NAME -n plantya-dev
+          kubectl rollout status deployment/plantya-management -n plantya-dev
