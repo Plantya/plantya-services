@@ -74,7 +74,10 @@ public class UserService {
         boolean useSearch = search != null && !search.isBlank();
         boolean useRoleFilter = role != null;
 
-        long count = repository.countActiveUsers(useSearch ? search : null, useRoleFilter ? role : null);
+        String searchParam = useSearch ? search : null;
+        UserRole roleParam = useRoleFilter ? role : null;
+
+        long count = repository.countActiveUsers(searchParam, roleParam);
 
         if (!usePaging) {
             List<UserResponse> list = repository.findAllActive(
@@ -82,29 +85,22 @@ public class UserService {
                     null,
                     sort,
                     order,
-                    useSearch ? search : null,
-                    useRoleFilter ? role : null
+                    searchParam,
+                    roleParam
             );
-
             return new ListUserResponse<>(count, 1, list.size(), 1, list);
         }
 
         List<UserResponse> list = repository.findAllActive(
-                null,
-                null,
+                page,
+                size,
                 sort,
                 order,
-                search,
-                role
+                searchParam,
+                roleParam
         );
 
         int totalPages = (int) Math.ceil((double) count / size);
-
-        LOG.debugf("Active users found: count=%d", count);
-        LOG.debugf(
-                "Find active users: page=%s, size=%s, sort=%s, order=%s, search=%s, role=%s",
-                page, size, sort, order, search, role
-        );
 
         return new ListUserResponse<>(count, page, size, totalPages, list);
     }
