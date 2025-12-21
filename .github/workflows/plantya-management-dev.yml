@@ -14,7 +14,7 @@ jobs:
 
     env:
       IMAGE_NAME: registry.digitalocean.com/plantya-registry/plantya-management
-      IMAGE_TAG: dev
+      IMAGE_TAG: ${{ github.sha }}
 
     steps:
       - uses: actions/checkout@v4
@@ -56,6 +56,7 @@ jobs:
     env:
       NAMESPACE: plantya-dev
       SERVICE_NAME: plantya-management
+      IMAGE_TAG: ${{ github.sha }}
 
     steps:
       - uses: actions/checkout@v4
@@ -77,7 +78,7 @@ jobs:
 
       - name: Deploy Kubernetes manifests
         run: |
-          kubectl apply -f plantya-management/kubernetes/dev/ -n $NAMESPACE
+          envsubst < plantya-management/kubernetes/dev/deployment.yaml | kubectl apply -n $NAMESPACE -f -
 
       - name: Restart deployment
         run: |
