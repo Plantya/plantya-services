@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: plantya-management
-          image: registry.digitalocean.com/plantya-registry/plantya-management:dev
+          image: registry.digitalocean.com/plantya-registry/plantya-management:${IMAGE_TAG}
           ports:
             - containerPort: 8080
           envFrom:
