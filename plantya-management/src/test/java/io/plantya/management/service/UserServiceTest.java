@@ -98,8 +98,8 @@ class UserServiceTest {
 
             when(repository.countActiveUsers(null, null)).thenReturn(2L);
             when(repository.findAllActive(
-                    isNull(),
-                    isNull(),
+                    eq(1),
+                    eq(5),
                     isNull(),
                     isNull(),
                     isNull(),
@@ -161,7 +161,7 @@ class UserServiceTest {
             var userService = new UserService(validator, repository, sequenceRepository);
 
             when(repository.countActiveUsers(null, null)).thenReturn(0L);
-            when(repository.findAllActive(null, null, null, null, null, null))
+            when(repository.findAllActive(1, 5, null, null, null, null))
                     .thenReturn(List.of());
 
             var response = userService.findAllActive(1, 5, null, null, null, null);
