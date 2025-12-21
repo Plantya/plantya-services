@@ -2,26 +2,15 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: plantya-management-ingress
-  namespace: plantya-dev
-  labels:
-    app: plantya-management
   annotations:
     kubernetes.io/ingress.class: nginx
-
-    # Timeout (aman untuk API)
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
-
-    # Body size (jika ada upload / payload besar)
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
 spec:
   ingressClassName: nginx
   rules:
-    - host: dev.plantya.fun
+    - host: management.dev.plantya.fun
       http:
         paths:
-          - path: /management
+          - path: /
             pathType: Prefix
             backend:
               service:
