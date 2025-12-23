@@ -294,11 +294,14 @@ components:
     DeviceCreateResponse:
       type: object
       required:
+        - device_id
         - device_name
         - device_type
         - cluster_name
         - created_at
       properties:
+        device_id:
+          type: string
         device_name:
           type: string
         device_type:
@@ -324,11 +327,14 @@ components:
     DeviceUpdateResponse:
       type: object
       required:
+        - device_id
         - device_name
         - device_type
         - cluster_name
         - updated_at
       properties:
+        device_id:
+          type: string
         device_name:
           type: string
         device_type:
