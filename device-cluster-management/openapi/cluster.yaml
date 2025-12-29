@@ -1,0 +1,394 @@
+openapi: 3.1.0
+info:
+  title: Cluster Management API
+  version: 1.0.0
+
+servers:
+  - url: /api
+
+paths:
+  /clusters:
+    get:
+      tags: [Clusters]
+      summary: List clusters with pagination
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: created_at
+        - in: query
+          name: order
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Cluster list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClusterListResponse'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags: [Clusters]
+      summary: Create cluster
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClusterCreateRequest'
+      responses:
+        '201':
+          description: Cluster created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClusterCreateResponse'
+        '400':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Cluster already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /clusters/{cluster_id}:
+    get:
+      tags: [Clusters]
+      summary: Get cluster by cluster_id
+      parameters:
+        - in: path
+          name: cluster_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cluster detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClusterGetResponse'
+        '400':
+          description: Invalid cluster_id format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cluster not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      tags: [Clusters]
+      summary: Update cluster
+      parameters:
+        - in: path
+          name: cluster_id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClusterPatchRequest'
+      responses:
+        '200':
+          description: Cluster updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClusterUpdateResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cluster not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags: [Clusters]
+      summary: Delete cluster
+      parameters:
+        - in: path
+          name: cluster_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cluster deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClusterDeleteResponse'
+        '400':
+          description: Invalid cluster_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cluster not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /clusters/list:
+    get:
+      tags: [Clusters]
+      summary: Get cluster simple list
+      responses:
+        '200':
+          description: Cluster simple list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClusterSimpleListResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+
+    DeviceStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - INACTIVE
+        - MAINTENANCE
+
+    ClusterListResponse:
+      type: object
+      required:
+        - count
+        - data
+      properties:
+        count:
+          type: integer
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClusterSummary'
+
+    ClusterSummary:
+      type: object
+      required:
+        - cluster_id
+        - cluster_name
+        - total_sensor
+        - devices
+      properties:
+        cluster_id:
+          type: string
+        cluster_name:
+          type: string
+        total_sensor:
+          type: integer
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClusterDeviceSummary'
+
+    ClusterDeviceSummary:
+      type: object
+      required:
+        - device_name
+        - device_type
+        - status
+      properties:
+        device_name:
+          type: string
+        device_type:
+          type: string
+        status:
+          $ref: '#/components/schemas/DeviceStatus'
+
+    ClusterGetResponse:
+      $ref: '#/components/schemas/ClusterSummary'
+
+    ClusterCreateRequest:
+      type: object
+      required:
+        - cluster_name
+      properties:
+        cluster_name:
+          type: string
+
+    ClusterCreateResponse:
+      type: object
+      required:
+        - cluster_id
+        - cluster_name
+        - created_at
+      properties:
+        cluster_id:
+          type: string
+        cluster_name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    ClusterPatchRequest:
+      type: object
+      required:
+        - cluster_name
+      properties:
+        cluster_name:
+          type: string
+
+    ClusterUpdateResponse:
+      type: object
+      required:
+        - cluster_id
+        - cluster_name
+        - updated_at
+      properties:
+        cluster_id:
+          type: string
+        cluster_name:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+
+    ClusterDeleteResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+
+    ClusterSimpleListResponse:
+      type: object
+      required:
+        - list
+      properties:
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClusterSimpleItem'
+
+    ClusterSimpleItem:
+      type: object
+      required:
+        - cluster_id
+        - cluster_name
+      properties:
+        cluster_id:
+          type: string
+        cluster_name:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required:
+        - title
+        - status
+        - detail
+        - code
+        - timestamp
+      properties:
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+          enum:
+            # 404
+            - CLUSTER_NOT_FOUND
+
+            # 400
+            - CLUSTER_INVALID_ID_FORMAT
+            - CLUSTER_INVALID_REQUEST_PAYLOAD
+
+            # 409
+            - CLUSTER_ALREADY_EXISTS
+
+            # 500
+            - CLUSTER_INTERNAL_ERROR
+            - CLUSTER_DATABASE_ERROR
+        timestamp:
+          type: string
+          format: date-time

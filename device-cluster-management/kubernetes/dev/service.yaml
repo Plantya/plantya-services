@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: device-cluster-management-service
+  namespace: plantya-dev
+spec:
+  type: ClusterIP
+  selector:
+    app: device-cluster-management
+  ports:
+    - port: 80
+      targetPort: 8080

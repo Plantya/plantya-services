@@ -1,0 +1,392 @@
+openapi: 3.1.0
+info:
+  title: Device Management API
+  version: 1.0.0
+
+servers:
+  - url: /api
+
+paths:
+  /devices:
+    get:
+      tags: [Devices]
+      summary: List devices with filtering and pagination
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            $ref: '#/components/schemas/DeviceStatus'
+        - in: query
+          name: cluster_id
+          schema:
+            type: string
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: created_at
+        - in: query
+          name: order
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Device list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceListResponse'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: Invalid query parameters
+                status: 400
+                detail: "Invalid status value"
+                instance: "/devices"
+                code: DEVICE_INVALID_STATUS
+                timestamp: "2025-01-16T12:00:00Z"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags: [Devices]
+      summary: Create device
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceCreateRequest'
+      responses:
+        '201':
+          description: Device created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceCreateResponse'
+        '400':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Device already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /devices/{device_id}:
+    get:
+      tags: [Devices]
+      summary: Get device by device_id
+      parameters:
+        - in: path
+          name: device_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Device detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceGetResponse'
+        '400':
+          description: Invalid device_id format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Device not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      tags: [Devices]
+      summary: Partially update device
+      parameters:
+        - in: path
+          name: device_id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DevicePatchRequest'
+      responses:
+        '200':
+          description: Device updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceUpdateResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Device not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags: [Devices]
+      summary: Delete device
+      parameters:
+        - in: path
+          name: device_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Device deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceDeleteResponse'
+        '400':
+          description: Invalid device_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Device not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+
+    DeviceStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - INACTIVE
+        - MAINTENANCE
+
+    DeviceListResponse:
+      type: object
+      required:
+        - count
+        - data
+      properties:
+        count:
+          type: integer
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceSummary'
+
+    DeviceSummary:
+      type: object
+      required:
+        - device_id
+        - device_name
+        - device_type
+        - cluster_name
+        - status
+      properties:
+        device_id:
+          type: string
+        device_name:
+          type: string
+        device_type:
+          type: string
+        cluster_name:
+          type: string
+        status:
+          $ref: '#/components/schemas/DeviceStatus'
+
+    DeviceGetResponse:
+      allOf:
+        - $ref: '#/components/schemas/DeviceSummary'
+        - type: object
+          required:
+            - created_at
+            - updated_at
+          properties:
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+
+    DeviceCreateRequest:
+      type: object
+      required:
+        - device_name
+        - device_type
+        - cluster_name
+      properties:
+        device_name:
+          type: string
+        device_type:
+          type: string
+        cluster_name:
+          type: string
+
+    DeviceCreateResponse:
+      type: object
+      required:
+        - device_id
+        - device_name
+        - device_type
+        - cluster_name
+        - created_at
+      properties:
+        device_id:
+          type: string
+        device_name:
+          type: string
+        device_type:
+          type: string
+        cluster_name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    DevicePatchRequest:
+      type: object
+      properties:
+        device_name:
+          type: string
+        device_type:
+          type: string
+        cluster_name:
+          type: string
+        status:
+          $ref: '#/components/schemas/DeviceStatus'
+
+    DeviceUpdateResponse:
+      type: object
+      required:
+        - device_id
+        - device_name
+        - device_type
+        - cluster_name
+        - updated_at
+      properties:
+        device_id:
+          type: string
+        device_name:
+          type: string
+        device_type:
+          type: string
+        cluster_name:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+
+    DeviceDeleteResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required:
+        - title
+        - status
+        - detail
+        - code
+        - timestamp
+      properties:
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+          enum:
+            # 404
+            - DEVICE_NOT_FOUND
+
+            # 400
+            - DEVICE_INVALID_ID_FORMAT
+            - DEVICE_INVALID_REQUEST_PAYLOAD
+            - DEVICE_INVALID_STATUS
+
+            # 409
+            - DEVICE_ALREADY_EXISTS
+
+            # 500
+            - DEVICE_INTERNAL_ERROR
+            - DEVICE_DATABASE_ERROR
+        timestamp:
+          type: string
+          format: date-time
