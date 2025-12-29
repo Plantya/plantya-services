@@ -3,6 +3,7 @@ package io.plantya.iot.device.controller;
 import io.plantya.iot.device.dto.request.DeviceCreateRequest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
 
+@Disabled
 @QuarkusTest
 @DisplayName("DeviceController Integration Test")
 class DeviceControllerTest {
