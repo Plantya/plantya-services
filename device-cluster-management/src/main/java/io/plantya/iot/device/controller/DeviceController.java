@@ -9,9 +9,12 @@ import io.plantya.iot.device.dto.response.PagedDeviceResponse;
 import io.plantya.iot.device.service.DeviceService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path("/api/devices")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class DeviceController {
 
     @Inject

@@ -1,7 +1,9 @@
 package io.plantya.iot.device.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record DeviceCreateRequest(
-        String deviceName,
-        String deviceType,
-        String clusterId
+        @JsonProperty("device_name") String deviceName,
+        @JsonProperty("device_type") String deviceType,
+        @JsonProperty("cluster_id") String clusterId
 ) {}
