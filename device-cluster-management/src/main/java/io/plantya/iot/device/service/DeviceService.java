@@ -1,5 +1,6 @@
 package io.plantya.iot.device.service;
 
+import io.plantya.iot.common.dto.param.DeviceParam;
 import io.plantya.iot.common.exception.BadRequestException;
 import io.plantya.iot.common.exception.ConflictException;
 import io.plantya.iot.common.exception.NotFoundException;
@@ -32,16 +33,23 @@ public class DeviceService {
 
     private final Logger LOG = Logger.getLogger(DeviceService.class);
 
-    public PagedDeviceResponse findAllExistingDevices(int page, int size, String search) {
-        List<DeviceGetResponse> mappedDeviceList = deviceRepository.findAllExistingDevices(page - 1, size, search)
-                .stream()
+    public PagedDeviceResponse findAllExistingDevices(DeviceParam param) {
+        List<Device> devices = deviceRepository.findAllExistingDevices(param);
+        long totalData = deviceRepository.countExistingDevices(param);
+
+        List<DeviceGetResponse> responses = devices.stream()
                 .map(ResponseMapper::toDeviceGetResponse)
                 .toList();
 
-        long totalData = deviceRepository.countExistingDevices(search);
-        int totalPages = (int) Math.ceil((double) totalData / size);
+        int totalPages = (int) Math.ceil((double) totalData / param.size());
 
-        return new PagedDeviceResponse(mappedDeviceList.size(), page, size, totalPages, mappedDeviceList);
+        return new PagedDeviceResponse(
+                responses.size(),
+                param.page(),
+                param.size(),
+                totalPages,
+                responses
+        );
     }
 
     @Transactional
@@ -57,7 +65,7 @@ public class DeviceService {
         device.setDeviceName(request.deviceName());
         device.setDeviceType(request.deviceType());
         device.setClusterId(request.clusterId());
-        device.setStatus(DeviceStatus.INACTIVE);
+        device.setStatus(DeviceStatus.OFFLINE);
 
         // TODO: Check if cluster exists
 

@@ -1,6 +1,6 @@
 package io.plantya.iot.common.exception.mapper;
 
-import io.plantya.iot.common.dto.ErrorResponse;
+import io.plantya.iot.common.dto.response.ErrorResponse;
 import io.plantya.iot.common.exception.ApiException;
 import io.plantya.iot.common.exception.BadRequestException;
 import io.plantya.iot.common.exception.ConflictException;
