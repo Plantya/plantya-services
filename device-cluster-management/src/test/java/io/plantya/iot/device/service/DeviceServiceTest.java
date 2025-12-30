@@ -15,6 +15,7 @@ import io.plantya.iot.device.repository.DeviceRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -22,7 +23,7 @@ import java.util.Optional;
 import static org.mockito.Mockito.*;
 
 @DisplayName("DeviceService Unit Test")
-@ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
+@ExtendWith(MockitoExtension.class)
 class DeviceServiceTest {
 
     @Mock
@@ -50,7 +51,7 @@ class DeviceServiceTest {
             saved.setDeviceName("dev-1");
             saved.setDeviceType("sensor");
             saved.setClusterId("cluster-1");
-            saved.setStatus(DeviceStatus.INACTIVE);
+            saved.setStatus(DeviceStatus.OFFLINE);
 
             when(deviceRepository.save(any(Device.class))).thenReturn(saved);
 
@@ -58,7 +59,7 @@ class DeviceServiceTest {
 
             assertEquals("D1", response.deviceId());
             assertEquals("dev-1", response.deviceName());
-            assertEquals(DeviceStatus.INACTIVE, response.status());
+            assertEquals(DeviceStatus.OFFLINE, response.status());
         }
 
         @Test
@@ -117,7 +118,7 @@ class DeviceServiceTest {
             device.setDeviceName("device");
             device.setDeviceType("sensor");
             device.setClusterId("cluster");
-            device.setStatus(DeviceStatus.ACTIVE);
+            device.setStatus(DeviceStatus.ONLINE);
 
             when(deviceRepository.findByDeviceId("D1"))
                     .thenReturn(Optional.of(device));
@@ -125,7 +126,7 @@ class DeviceServiceTest {
             DeviceGetResponse response = deviceService.findDeviceByDeviceId("D1");
 
             assertEquals("D1", response.deviceId());
-            assertEquals(DeviceStatus.ACTIVE, response.status());
+            assertEquals(DeviceStatus.ONLINE, response.status());
         }
 
         @Test
@@ -157,19 +158,19 @@ class DeviceServiceTest {
             device.setDeviceId("D1");
             device.setDeviceName("old");
             device.setDeviceType("oldType");
-            device.setStatus(DeviceStatus.INACTIVE);
+            device.setStatus(DeviceStatus.OFFLINE);
 
             when(deviceRepository.findByDeviceId("D1"))
                     .thenReturn(Optional.of(device));
 
             DeviceUpdateRequest req =
-                    new DeviceUpdateRequest("newName", null, DeviceStatus.ACTIVE);
+                    new DeviceUpdateRequest("newName", null, DeviceStatus.ONLINE);
 
             DeviceUpdateResponse response =
                     deviceService.updateDevice("D1", req);
 
             assertEquals("newName", response.deviceName());
-            assertEquals(DeviceStatus.ACTIVE, response.status());
+            assertEquals(DeviceStatus.ONLINE, response.status());
             assertEquals("oldType", response.deviceType());
         }
 
