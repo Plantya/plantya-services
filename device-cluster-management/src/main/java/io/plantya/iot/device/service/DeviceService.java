@@ -34,6 +34,10 @@ public class DeviceService {
     private final Logger LOG = Logger.getLogger(DeviceService.class);
 
     public PagedDeviceResponse findAllExistingDevices(DeviceParam param) {
+        if (param.page() < 1) {
+            throw new BadRequestException(PAGE_LOWER_THAN_ONE);
+        }
+
         List<Device> devices = deviceRepository.findAllExistingDevices(param);
         long totalData = deviceRepository.countExistingDevices(param);
 

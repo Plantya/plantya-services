@@ -5,12 +5,13 @@ import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.QueryParam;
 
 public class DeviceQueryParam {
-    @QueryParam("page")
+
     @DefaultValue("1")
+    @QueryParam("page")
     private int page;
 
-    @QueryParam("size")
     @DefaultValue("10")
+    @QueryParam("size")
     private int size;
 
     @QueryParam("search")
