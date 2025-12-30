@@ -1,4 +1,4 @@
-package io.plantya.iot.common.dto;
+package io.plantya.iot.common.dto.response;
 
 import java.time.Instant;
 

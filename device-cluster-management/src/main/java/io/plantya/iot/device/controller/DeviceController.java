@@ -1,5 +1,7 @@
 package io.plantya.iot.device.controller;
 
+import io.plantya.iot.common.dto.param.DeviceParam;
+import io.plantya.iot.common.dto.request.DeviceQueryParam;
 import io.plantya.iot.device.dto.request.DeviceCreateRequest;
 import io.plantya.iot.device.dto.request.DeviceUpdateRequest;
 import io.plantya.iot.device.dto.response.DeviceCreateResponse;
@@ -21,8 +23,17 @@ public class DeviceController {
     DeviceService deviceService;
 
     @GET
-    public Response findAllExistingDevices(@QueryParam("page") int page, @QueryParam("size") int size, @QueryParam("search") String search) {
-        PagedDeviceResponse response = deviceService.findAllExistingDevices(page, size, search);
+    public Response findAllExistingDevices(@BeanParam DeviceQueryParam queryParam) {
+        DeviceParam deviceParam = new DeviceParam(
+                queryParam.getPage(),
+                queryParam.getSize(),
+                queryParam.getSearch(),
+                queryParam.getSort(),
+                queryParam.getOrder(),
+                queryParam.getStatus()
+        );
+
+        PagedDeviceResponse response = deviceService.findAllExistingDevices(deviceParam);
         return Response.status(Response.Status.OK)
                 .entity(response)
                 .build();
