@@ -32,7 +32,7 @@ public class DeviceRepository implements PanacheRepository<Device> {
         QueryData queryData = buildQuery(param);
 
         return find(queryData.query(), queryData.params().toArray())
-                .page(Page.of(param.page(), param.size()))
+                .page(Page.of(param.page() - 1, param.size()))
                 .list();
     }
 
