@@ -2,8 +2,11 @@ package io.plantya.iot.device.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.plantya.iot.cluster.entity.Cluster;
+import io.plantya.iot.cluster.repository.ClusterRepository;
+import io.plantya.iot.cluster.service.ClusterService;
 import io.plantya.iot.common.exception.*;
-import io.plantya.iot.common.exception.message.DeviceError;
+import io.plantya.iot.common.exception.message.ErrorMessage;
 import io.plantya.iot.device.domain.Device;
 import io.plantya.iot.device.domain.DeviceStatus;
 import io.plantya.iot.device.dto.request.DeviceCreateRequest;
@@ -26,11 +29,14 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class DeviceServiceTest {
 
+    @InjectMocks
+    DeviceService deviceService;
+
     @Mock
     DeviceRepository deviceRepository;
 
-    @InjectMocks
-    DeviceService deviceService;
+    @Mock
+    ClusterRepository clusterRepository;
 
     // =========================================================
     // CREATE DEVICE
@@ -40,65 +46,124 @@ class DeviceServiceTest {
     @DisplayName("Create Device")
     class CreateDeviceTest {
 
+        private DeviceCreateRequest validRequest() {
+            return new DeviceCreateRequest(
+                    "Temperature Sensor",
+                    "SENSOR",
+                    "CL-001"
+            );
+        }
+
+        private Device createSavedDevice() {
+            Device device = new Device();
+            device.setDeviceId("DVC-001");
+            device.setDeviceName("Temperature Sensor");
+            device.setDeviceType("SENSOR");
+            device.setClusterId("CL-001");
+            device.setStatus(DeviceStatus.OFFLINE);
+            device.setCreatedAt(Instant.now());
+            return device;
+        }
+
         @Test
-        @DisplayName("Success - valid request")
+        @DisplayName("SUCCESS: Create device successfully")
         void createDevice_success() {
-            DeviceCreateRequest request =
-                    new DeviceCreateRequest("dev-1", "sensor", "cluster-1");
+            // Arrange
+            DeviceCreateRequest request = validRequest();
 
-            Device saved = new Device();
-            saved.setDeviceId("D1");
-            saved.setDeviceName("dev-1");
-            saved.setDeviceType("sensor");
-            saved.setClusterId("cluster-1");
-            saved.setStatus(DeviceStatus.OFFLINE);
+            when(clusterRepository.findByClusterId("CL-001"))
+                    .thenReturn(Optional.of(new Cluster()));
 
-            when(deviceRepository.save(any(Device.class))).thenReturn(saved);
+            when(deviceRepository.save(any(Device.class)))
+                    .thenReturn(createSavedDevice());
 
+            // Act
             DeviceCreateResponse response = deviceService.createDevice(request);
 
-            assertEquals("D1", response.deviceId());
-            assertEquals("dev-1", response.deviceName());
+            // Assert
+            assertNotNull(response);
+            assertEquals("DVC-001", response.deviceId());
+            assertEquals("Temperature Sensor", response.deviceName());
+            assertEquals("SENSOR", response.deviceType());
+            assertEquals("CL-001", response.clusterId());
             assertEquals(DeviceStatus.OFFLINE, response.status());
+            assertNotNull(response.createdAt());
+
+            verify(clusterRepository, times(1)).findByClusterId("CL-001");
+            verify(deviceRepository, times(1)).save(any(Device.class));
         }
 
         @Test
-        @DisplayName("Fail - device name missing")
-        void createDevice_missingName() {
-            DeviceCreateRequest request =
-                    new DeviceCreateRequest(null, "type", "cluster");
+        @DisplayName("FAIL: Cluster not found")
+        void createDevice_clusterNotFound() {
+            // Arrange
+            DeviceCreateRequest request = validRequest();
 
-            BadRequestException ex =
-                    assertThrows(BadRequestException.class,
-                            () -> deviceService.createDevice(request));
+            when(clusterRepository.findByClusterId("CL-001"))
+                    .thenReturn(Optional.empty());
 
-            assertEquals(DeviceError.DEVICE_NAME_REQUIRED, ex.getError());
+            // Act & Assert
+            NotFoundException exception = assertThrows(
+                    NotFoundException.class,
+                    () -> deviceService.createDevice(request)
+            );
+
+            assertEquals("CLUSTER_NOT_FOUND", exception.getError().getCode());
+            verify(deviceRepository, never()).save(any());
         }
 
         @Test
-        @DisplayName("Fail - device type missing")
-        void createDevice_missingType() {
-            DeviceCreateRequest request =
-                    new DeviceCreateRequest("dev", null, "cluster");
+        @DisplayName("FAIL: Request is null")
+        void createDevice_nullRequest() {
+            // Act & Assert
+            BadRequestException exception = assertThrows(
+                    BadRequestException.class,
+                    () -> deviceService.createDevice(null)
+            );
 
-            BadRequestException ex =
-                    assertThrows(BadRequestException.class,
-                            () -> deviceService.createDevice(request));
-
-            assertEquals(DeviceError.DEVICE_TYPE_REQUIRED, ex.getError());
+            assertEquals("DEVICE_REQUEST_INVALID", exception.getError().getCode());
         }
 
         @Test
-        @DisplayName("Fail - cluster id missing")
-        void createDevice_missingCluster() {
+        @DisplayName("FAIL: Missing device name")
+        void createDevice_missingDeviceName() {
             DeviceCreateRequest request =
-                    new DeviceCreateRequest("dev", "type", null);
+                    new DeviceCreateRequest(null, "SENSOR", "CL-001");
 
-            BadRequestException ex =
-                    assertThrows(BadRequestException.class,
-                            () -> deviceService.createDevice(request));
+            BadRequestException exception = assertThrows(
+                    BadRequestException.class,
+                    () -> deviceService.createDevice(request)
+            );
 
-            assertEquals(DeviceError.DEVICE_CLUSTER_REQUIRED, ex.getError());
+            assertEquals("DEVICE_NAME_REQUIRED", exception.getError().getCode());
+        }
+
+        @Test
+        @DisplayName("FAIL: Missing device type")
+        void createDevice_missingDeviceType() {
+            DeviceCreateRequest request =
+                    new DeviceCreateRequest("Sensor", null, "CL-001");
+
+            BadRequestException exception = assertThrows(
+                    BadRequestException.class,
+                    () -> deviceService.createDevice(request)
+            );
+
+            assertEquals("DEVICE_TYPE_REQUIRED", exception.getError().getCode());
+        }
+
+        @Test
+        @DisplayName("FAIL: Missing cluster id")
+        void createDevice_missingClusterId() {
+            DeviceCreateRequest request =
+                    new DeviceCreateRequest("Sensor", "SENSOR", null);
+
+            BadRequestException exception = assertThrows(
+                    BadRequestException.class,
+                    () -> deviceService.createDevice(request)
+            );
+
+            assertEquals("DEVICE_CLUSTER_REQUIRED", exception.getError().getCode());
         }
     }
 
@@ -139,7 +204,7 @@ class DeviceServiceTest {
                     assertThrows(NotFoundException.class,
                             () -> deviceService.findDeviceByDeviceId("X"));
 
-            assertEquals(DeviceError.DEVICE_NOT_FOUND, ex.getError());
+            assertEquals(ErrorMessage.DEVICE_NOT_FOUND, ex.getError());
         }
     }
 
@@ -188,7 +253,7 @@ class DeviceServiceTest {
                     assertThrows(BadRequestException.class,
                             () -> deviceService.updateDevice("D1", request));
 
-            assertEquals(DeviceError.DEVICE_UPDATE_EMPTY, ex.getError());
+            assertEquals(ErrorMessage.DEVICE_UPDATE_EMPTY, ex.getError());
         }
 
         @Test
@@ -206,7 +271,7 @@ class DeviceServiceTest {
                                     "D1",
                                     new DeviceUpdateRequest("x", null, null)));
 
-            assertEquals(DeviceError.DEVICE_ALREADY_DELETED, ex.getError());
+            assertEquals(ErrorMessage.DEVICE_ALREADY_DELETED, ex.getError());
         }
     }
 
@@ -240,7 +305,7 @@ class DeviceServiceTest {
                     assertThrows(NotFoundException.class,
                             () -> deviceService.deleteDevice("X"));
 
-            assertEquals(DeviceError.DEVICE_NOT_FOUND, ex.getError());
+            assertEquals(ErrorMessage.DEVICE_NOT_FOUND, ex.getError());
         }
 
         @Test
@@ -256,7 +321,7 @@ class DeviceServiceTest {
                     assertThrows(ConflictException.class,
                             () -> deviceService.deleteDevice("D1"));
 
-            assertEquals(DeviceError.DEVICE_ALREADY_DELETED, ex.getError());
+            assertEquals(ErrorMessage.DEVICE_ALREADY_DELETED, ex.getError());
         }
     }
 }
