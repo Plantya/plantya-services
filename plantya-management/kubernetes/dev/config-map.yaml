@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: plantya-management-config-map
+data:
+  # Management
+  QUARKUS_MANAGEMENT_PORT: "8080"
+
+  # Datasource (non-secret)
+  QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://private-plantya-db-dev-do-user-30685978-0.k.db.ondigitalocean.com:25060/defaultdb
+  QUARKUS_DATASOURCE_USERNAME: doadmin
+
+  # Flyway
+  QUARKUS_FLYWAY_MIGRATE_AT_START: "false"
+  QUARKUS_FLYWAY_LOCATIONS: db/migration
+
+  # CORS
+  QUARKUS_HTTP_CORS_ENABLED: "true"
+  QUARKUS_HTTP_CORS_ORIGINS: /.*/
+  QUARKUS_HTTP_CORS_METHODS: GET,POST,PATCH,DELETE,OPTIONS
+  QUARKUS_HTTP_CORS_HEADERS: "*"
+  QUARKUS_HTTP_CORS_EXPOSED_HEADERS: "*"
+  QUARKUS_HTTP_CORS_ACCESS_CONTROL_ALLOW_CREDENTIALS: "true"
+
+  # Jackson
+  QUARKUS_JACKSON_PROPERTY_NAMING_STRATEGY: SNAKE_CASE

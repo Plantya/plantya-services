@@ -1,0 +1,574 @@
+openapi: 3.1.0
+info:
+  title: User Management API
+  version: 1.0.0
+
+servers:
+  - url: /api
+
+paths:
+  /users:
+    get:
+      tags: [ Users ]
+      summary: List active users (paginated)
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: role
+          schema:
+            $ref: '#/components/schemas/UserRole'
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            example: 10
+      responses:
+        '200':
+          description: Paginated active user list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedUserResponse'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/{userId}:
+    get:
+      tags: [ Users ]
+      summary: Get active user by userId
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Active user detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGetResponse'
+        '404':
+          description: User not found or already deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Invalid userId format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      tags: [Users]
+      summary: Partially update user
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPatchRequest'
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserUpdateResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: Invalid patch
+                status: 400
+                detail: "PATCH contains no valid fields"
+                instance: "/users/U0001"
+                code: USER_PATCH_EMPTY
+                timestamp: "2025-01-16T12:00:00Z"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags: [ Users ]
+      summary: Soft delete user
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Soft deleted
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Already deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: Already deleted
+                status: 409
+                detail: "User already deleted"
+                instance: "/users/deleted/U0001"
+                code: USER_ALREADY_DELETED
+                timestamp: "2025-01-16T12:00:00Z"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/{userId}/restore:
+    post:
+      tags: [Users]
+      summary: Restore a soft-deleted user
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGetResponse'
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Deleted user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Already active
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: Already active
+                status: 409
+                detail: "User is not deleted"
+                instance: "/users/U0001/restore"
+                code: USER_ALREADY_ACTIVE
+                timestamp: "2025-01-16T12:00:00Z"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/deleted:
+    get:
+      tags: [ Users ]
+      summary: List deleted users (paginated)
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: role
+          schema:
+            $ref: '#/components/schemas/UserRole'
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            example: 10
+      responses:
+        '200':
+          description: Paginated deleted user list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedDeletedUserResponse'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/deleted/{userId}:
+    get:
+      tags: [ Users ]
+      summary: Get deleted user by userId
+      description: >
+        Returns a deleted user by userId.
+        Active users or non-existing users will result in NOT FOUND.
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            example: U0001
+      responses:
+        '200':
+          description: Deleted user detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDeletedGetResponse'
+        '404':
+          description: Deleted user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: User not found
+                status: 404
+                detail: "Deleted user U0001 not found"
+                instance: "/users/deleted/U0001"
+                code: USER_DELETED_NOT_FOUND
+                timestamp: "2025-01-16T12:00:00Z"
+        '400':
+          description: Invalid userId format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                title: Invalid userId
+                status: 400
+                detail: "Invalid userId format"
+                instance: "/users/deleted/U00A1"
+                code: USER_INVALID_ID_FORMAT
+                timestamp: "2025-01-16T12:00:00Z"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+
+    UserRole:
+      type: string
+      enum:
+        - USER
+        - STAFF
+        - ADMIN
+
+    PagedUserResponse:
+      type: object
+      required:
+        - count_data
+        - page
+        - size
+        - total_pages
+        - data
+      properties:
+        count_data:
+          type: integer
+          format: int64
+        page:
+          type: integer
+          example: 1
+        size:
+          type: integer
+          example: 10
+        total_pages:
+          type: integer
+          example: 3
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserGetResponse'
+
+    PagedDeletedUserResponse:
+      type: object
+      required:
+        - count_data
+        - page
+        - size
+        - total_pages
+        - data
+      properties:
+        count_data:
+          type: integer
+          format: int64
+        page:
+          type: integer
+          example: 1
+        size:
+          type: integer
+          example: 10
+        total_pages:
+          type: integer
+          example: 1
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserDeletedGetResponse'
+
+    UserGetResponse:
+      type: object
+      required:
+        - user_id
+        - email
+        - name
+        - role
+        - created_at
+        - updated_at
+      properties:
+        user_id:
+          type: string
+          pattern: '^[USA][0-9]{4}$'
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    UserDeletedGetResponse:
+      type: object
+      required:
+        - user_id
+        - email
+        - name
+        - role
+        - deleted_at
+      properties:
+        user_id:
+          type: string
+          pattern: '^[USA][0-9]{4}$'
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        deleted_at:
+          type: string
+          format: date-time
+
+    UserCreateResponse:
+      type: object
+      required:
+        - user_id
+        - email
+        - name
+        - role
+        - created_at
+      properties:
+        user_id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        created_at:
+          type: string
+          format: date-time
+
+    UserUpdateResponse:
+      type: object
+      required:
+        - user_id
+        - email
+        - name
+        - role
+        - updated_at
+      properties:
+        user_id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        updated_at:
+          type: string
+          format: date-time
+
+    UserCreateRequest:
+      type: object
+      required:
+        - email
+        - name
+        - role
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        password:
+          type: string
+          default: Random UUID
+
+    UserPutRequest:
+      type: object
+      required:
+        - email
+        - name
+        - role
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        password:
+          type: string
+          nullable: true
+
+    UserPatchRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        password:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required:
+        - title
+        - status
+        - detail
+        - code
+        - timestamp
+      properties:
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+          enum:
+            # 404
+            - USER_NOT_FOUND
+            - USER_DELETED_NOT_FOUND
+
+            # 400
+            - USER_INVALID_ID_FORMAT
+            - USER_INVALID_REQUEST_PAYLOAD
+            - USER_INVALID_EMAIL_FORMAT
+            - USER_INVALID_ROLE
+            - USER_INVALID_PASSWORD
+            - USER_INVALID_NAME
+            - USER_PATCH_EMPTY
+
+            # 409
+            - USER_EMAIL_ALREADY_EXISTS
+            - USER_ALREADY_DELETED
+            - USER_ALREADY_ACTIVE
+            - USER_ROLE_CANNOT_PROMOTE
+            - USER_ROLE_CANNOT_DEMOTE
+
+            # 500
+            - USER_INTERNAL_ERROR
+            - USER_DATABASE_ERROR
+        timestamp:
+          type: string
+          format: date-time

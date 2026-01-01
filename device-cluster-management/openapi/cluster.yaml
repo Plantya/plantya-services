@@ -1,0 +1,250 @@
+openapi: 3.0.3
+info:
+  title: Cluster Service API
+  version: 1.0.0
+  description: API for managing clusters
+
+servers:
+  - url: /api
+
+paths:
+  /clusters:
+    get:
+      summary: Get list of clusters
+      tags: [Cluster]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: size
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: sort
+          in: query
+          schema: { type: string }
+        - name: order
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Cluster list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedClusterResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+    post:
+      summary: Create cluster
+      tags: [Cluster]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClusterCreateRequest"
+      responses:
+        "201":
+          description: Cluster created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClusterCreateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /clusters/{clusterId}:
+    get:
+      summary: Get cluster detail
+      tags: [Cluster]
+      parameters:
+        - name: clusterId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Cluster detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClusterGetResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    patch:
+      summary: Update cluster
+      tags: [Cluster]
+      parameters:
+        - name: clusterId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClusterUpdateRequest"
+      responses:
+        "200":
+          description: Cluster updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClusterUpdateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+    delete:
+      summary: Delete cluster
+      tags: [Cluster]
+      parameters:
+        - name: clusterId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Cluster deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        path:
+          type: string
+        code:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    ClusterCreateRequest:
+      type: object
+      required: [clusterName]
+      properties:
+        clusterName:
+          type: string
+
+    ClusterCreateResponse:
+      type: object
+      properties:
+        clusterId:
+          type: string
+        clusterName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    ClusterUpdateRequest:
+      type: object
+      properties:
+        clusterName:
+          type: string
+
+    ClusterUpdateResponse:
+      type: object
+      properties:
+        clusterId:
+          type: string
+        clusterName:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+
+    ClusterGetResponse:
+      type: object
+      properties:
+        clusterId:
+          type: string
+        clusterName:
+          type: string
+        totalDevices:
+          type: integer
+        devices:
+          type: array
+          items:
+            $ref: "#/components/schemas/DeviceSummary"
+
+    PagedClusterResponse:
+      type: object
+      properties:
+        countData:
+          type: integer
+        page:
+          type: integer
+        size:
+          type: integer
+        totalPages:
+          type: integer
+        clusters:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClusterSummary"
+
+    ClusterSummary:
+      type: object
+      properties:
+        clusterId:
+          type: string
+        clusterName:
+          type: string
+
+    DeviceSummary:
+      type: object
+      properties:
+        deviceId:
+          type: string
+        deviceName:
+          type: string
+        deviceType:
+          type: string
+        status:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"

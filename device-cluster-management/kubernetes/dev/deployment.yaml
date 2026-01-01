@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: device-cluster-management
+  namespace: plantya-dev
+  labels:
+    app: device-cluster-management
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: device-cluster-management
+  template:
+    metadata:
+      name: device-cluster-management
+      labels:
+        app: device-cluster-management
+    spec:
+      containers:
+        - name: device-cluster-management
+          image: registry.digitalocean.com/plantya-registry/device-cluster-management:${IMAGE_TAG}
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: device-cluster-management-config-map
+            - secretRef:
+                name: device-cluster-management-secret
+
+      
