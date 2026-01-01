@@ -1,8 +1,8 @@
 package io.plantya.iot.device.repository;
 
 import io.plantya.iot.common.dto.param.DeviceParam;
+import io.plantya.iot.common.dto.query.QueryData;
 import io.plantya.iot.device.domain.Device;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Parameters;
@@ -49,6 +49,17 @@ public class DeviceRepository implements PanacheRepository<Device> {
         );
     }
 
+    public List<Device> findAllDevicesByClusterId(String clusterId) {
+        return list("clusterId = :clusterId AND deletedAt IS NULL", Parameters.with("clusterId", clusterId));
+    }
+
+    public void softDeleteDevicesByClusterId(String clusterId) {
+        update(
+                "deletedAt = :deletedAt WHERE clusterId = :clusterId AND deletedAt IS NULL",
+                Parameters.with("deletedAt", Instant.now()).and("clusterId", clusterId)
+        );
+    }
+
     // ===== HELPER ===== //
     private QueryData buildQuery(DeviceParam param) {
         StringBuilder query = new StringBuilder("deletedAt IS NULL");
@@ -88,7 +99,6 @@ public class DeviceRepository implements PanacheRepository<Device> {
             case "deviceName" -> "deviceName";
             case "deviceType" -> "deviceType";
             case "clusterId" -> "clusterId";
-            case "createdAt" -> "createdAt";
             default -> "createdAt";
         };
     }
@@ -96,6 +106,4 @@ public class DeviceRepository implements PanacheRepository<Device> {
     private String resolveSortOrder(String order) {
         return "asc".equalsIgnoreCase(order) ? "ASC" : "DESC";
     }
-
-    private record QueryData(String query, List<Object> params) {}
 }

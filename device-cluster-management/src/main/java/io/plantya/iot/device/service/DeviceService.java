@@ -1,10 +1,11 @@
 package io.plantya.iot.device.service;
 
+import io.plantya.iot.cluster.repository.ClusterRepository;
 import io.plantya.iot.common.dto.param.DeviceParam;
 import io.plantya.iot.common.exception.BadRequestException;
 import io.plantya.iot.common.exception.ConflictException;
 import io.plantya.iot.common.exception.NotFoundException;
-import io.plantya.iot.common.mapper.ResponseMapper;
+import io.plantya.iot.common.mapper.DeviceResponseMapper;
 import io.plantya.iot.common.validator.RequestValidator;
 import io.plantya.iot.device.domain.Device;
 import io.plantya.iot.device.domain.DeviceStatus;
@@ -23,13 +24,16 @@ import org.jboss.logging.Logger;
 import java.time.Instant;
 import java.util.List;
 
-import static io.plantya.iot.common.exception.message.DeviceError.*;
+import static io.plantya.iot.common.exception.message.ErrorMessage.*;
 
 @ApplicationScoped
 public class DeviceService {
 
     @Inject
     DeviceRepository deviceRepository;
+
+    @Inject
+    ClusterRepository clusterRepository;
 
     private final Logger LOG = Logger.getLogger(DeviceService.class);
 
@@ -42,7 +46,7 @@ public class DeviceService {
         long totalData = deviceRepository.countExistingDevices(param);
 
         List<DeviceGetResponse> responses = devices.stream()
-                .map(ResponseMapper::toDeviceGetResponse)
+                .map(DeviceResponseMapper::toDeviceGetResponse)
                 .toList();
 
         int totalPages = (int) Math.ceil((double) totalData / param.size());
@@ -58,12 +62,12 @@ public class DeviceService {
 
     @Transactional
     public DeviceCreateResponse createDevice(DeviceCreateRequest request) {
+        RequestValidator.validateDeviceCreateRequest(request);
+
         LOG.infof(
                 "Creating device: deviceName=%s, deviceType=%s, clusterId=%s",
                 request.deviceName(), request.deviceType(), request.clusterId()
         );
-
-        RequestValidator.validateDeviceCreateRequest(request);
 
         Device device = new Device();
         device.setDeviceName(request.deviceName());
@@ -71,19 +75,23 @@ public class DeviceService {
         device.setClusterId(request.clusterId());
         device.setStatus(DeviceStatus.OFFLINE);
 
-        // TODO: Check if cluster exists
+        boolean isClusterPresent = clusterRepository.findByClusterId(request.clusterId()).isPresent();
+        if (!isClusterPresent) {
+            LOG.errorf("Cluster not found: clusterId=%s", request.clusterId());
+            throw new NotFoundException(CLUSTER_NOT_FOUND);
+        }
 
         Device savedDevice = deviceRepository.save(device);
 
         LOG.infof("Device created successfully: deviceId=%s", savedDevice.getDeviceId());
-        return ResponseMapper.toDeviceCreateResponse(savedDevice);
+        return DeviceResponseMapper.toDeviceCreateResponse(savedDevice);
     }
 
     public DeviceGetResponse findDeviceByDeviceId(String deviceId) {
         Device device = deviceRepository.findByDeviceId(deviceId)
                 .orElseThrow(() -> new NotFoundException(DEVICE_NOT_FOUND));
 
-        return ResponseMapper.toDeviceGetResponse(device);
+        return DeviceResponseMapper.toDeviceGetResponse(device);
     }
 
     @Transactional
@@ -132,7 +140,7 @@ public class DeviceService {
         device.setUpdatedAt(Instant.now());
 
         LOG.infof("Device patched successfully: deviceId=%s", deviceId);
-        return ResponseMapper.toDeviceUpdateResponse(device);
+        return DeviceResponseMapper.toDeviceUpdateResponse(device);
     }
 
     @Transactional
