@@ -13,8 +13,6 @@ public enum ErrorMessage implements ApiError {
     CLUSTER_NOT_FOUND("CLUSTER_NOT_FOUND", "cluster not found"),
     CLUSTER_UPDATE_EMPTY("CLUSTER_UPDATE_EMPTY", "no fields provided to update"),
 
-    PAGE_LOWER_THAN_ONE("PAGE_LOWER_THAN_ONE", "page number must be greater than 0"),
-
     DEVICE_NOT_FOUND("DEVICE_NOT_FOUND", "device not found"),
     DEVICE_ALREADY_DELETED("DEVICE_ALREADY_DELETED", "device already deleted"),
     DEVICE_UPDATE_EMPTY("DEVICE_UPDATE_EMPTY", "no fields provided to update"),
