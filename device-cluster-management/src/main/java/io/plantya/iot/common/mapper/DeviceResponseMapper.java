@@ -3,9 +3,10 @@ package io.plantya.iot.common.mapper;
 import io.plantya.iot.device.domain.Device;
 import io.plantya.iot.device.dto.response.DeviceCreateResponse;
 import io.plantya.iot.device.dto.response.DeviceGetResponse;
+import io.plantya.iot.device.dto.response.DeviceListResponse;
 import io.plantya.iot.device.dto.response.DeviceUpdateResponse;
 
-public class ResponseMapper {
+public class DeviceResponseMapper {
 
     public static DeviceGetResponse toDeviceGetResponse(Device device) {
         return new DeviceGetResponse(
@@ -38,6 +39,15 @@ public class ResponseMapper {
                 device.getStatus(),
                 device.getClusterId(),
                 device.getCreatedAt()
+        );
+    }
+
+    public static DeviceListResponse toDeviceListResponse(Device device) {
+        return new DeviceListResponse(
+                device.getDeviceId(),
+                device.getDeviceName(),
+                device.getDeviceType(),
+                device.getStatus()
         );
     }
 }
