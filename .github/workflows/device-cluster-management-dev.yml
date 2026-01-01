@@ -76,6 +76,12 @@ jobs:
       - name: Verify cluster access
         run: kubectl cluster-info
 
+      - name: Deploy config-map
+        run: kubectl apply -f $SERVICE_NAME/kubernetes/dev/config-map.yaml -n $NAMESPACE
+
+      - name: Deploy service
+        run: kubectl apply -f $SERVICE_NAME/kubernetes/dev/service.yaml -n $NAMESPACE
+
       - name: Deploy Kubernetes manifests
         run: |
           envsubst < $SERVICE_NAME/kubernetes/dev/deployment.yaml | kubectl apply -n $NAMESPACE -f -
