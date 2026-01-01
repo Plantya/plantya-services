@@ -11,12 +11,6 @@ public abstract class ApiException extends RuntimeException {
         this.detail = error.getDefaultDetail();
     }
 
-    protected ApiException(ApiError error, String detail) {
-        super(detail);
-        this.error = error;
-        this.detail = detail;
-    }
-
     public ApiError getError() {
         return error;
     }

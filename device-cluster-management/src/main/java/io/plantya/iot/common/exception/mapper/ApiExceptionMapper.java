@@ -64,5 +64,4 @@ public class ApiExceptionMapper implements ExceptionMapper<ApiException> {
             default -> Response.Status.INTERNAL_SERVER_ERROR;
         };
     }
-
 }
