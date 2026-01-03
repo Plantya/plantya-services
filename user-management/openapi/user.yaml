@@ -1,0 +1,380 @@
+openapi: 3.0.3
+info:
+  title: User Management API
+  description: API for managing users, including soft delete and restore
+  version: 1.0.0
+
+servers:
+  - url: /api
+
+paths:
+
+  /users:
+    post:
+      summary: Create new user
+      operationId: createUser
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreateResponse'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    get:
+      summary: Get all existing users
+      operationId: findAllExistingUsers
+      tags: [Users]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Order'
+        - $ref: '#/components/parameters/Role'
+      responses:
+        '200':
+          description: List of existing users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedUserGetResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  /users/{userId}:
+    get:
+      summary: Get user by userId
+      operationId: findByUserId
+      tags: [Users]
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGetResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    patch:
+      summary: Update user partially
+      operationId: updateUser
+      tags: [Users]
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserUpdateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+
+    delete:
+      summary: Soft delete user
+      operationId: deleteUser
+      tags: [Users]
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '204':
+          description: User deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+
+  /users/deleted:
+    get:
+      summary: Get all deleted users
+      operationId: findAllDeletedUsers
+      tags: [Deleted Users]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Order'
+        - $ref: '#/components/parameters/Role'
+      responses:
+        '200':
+          description: List of deleted users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedUserDeletedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  /users/deleted/{userId}:
+    get:
+      summary: Get deleted user by userId
+      operationId: findDeletedByUserId
+      tags: [Deleted Users]
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Deleted user found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDeletedResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /users/deleted/{userId}/restore:
+    post:
+      summary: Restore deleted user
+      operationId: restoreUser
+      tags: [Deleted Users]
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: User restored successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGetResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+
+components:
+
+  parameters:
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+
+    Size:
+      name: size
+      in: query
+      schema:
+        type: integer
+        default: 10
+
+    Search:
+      name: search
+      in: query
+      schema:
+        type: string
+
+    Sort:
+      name: sort
+      in: query
+      schema:
+        type: string
+        enum: [userId, email, name, createdAt]
+
+    Order:
+      name: order
+      in: query
+      schema:
+        type: string
+        enum: [asc, desc]
+
+    Role:
+      name: role
+      in: query
+      schema:
+        $ref: '#/components/schemas/UserRole'
+
+  schemas:
+
+    UserRole:
+      type: string
+      enum: [ADMIN, USER]
+
+    UserCreateRequest:
+      type: object
+      required: [email, name, role]
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+
+    UserUpdateRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        password:
+          type: string
+
+    UserCreateResponse:
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        createdAt:
+          type: string
+          format: date-time
+
+    UserGetResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UserUpdateResponse:
+      $ref: '#/components/schemas/UserGetResponse'
+
+    UserDeletedResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        deletedAt:
+          type: string
+          format: date-time
+
+    PagedUserGetResponse:
+      type: object
+      properties:
+        countData:
+          type: integer
+        page:
+          type: integer
+        size:
+          type: integer
+        totalPages:
+          type: integer
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserGetResponse'
+
+    PagedUserDeletedResponse:
+      type: object
+      properties:
+        countData:
+          type: integer
+        page:
+          type: integer
+        size:
+          type: integer
+        totalPages:
+          type: integer
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserDeletedResponse'
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        status:
+          type: integer
+        message:
+          type: string
+        path:
+          type: string
+        code:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+  responses:
+    BadRequestError:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    ConflictError:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
