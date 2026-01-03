@@ -1,0 +1,89 @@
+name: CI/CD - User Management (Dev)
+
+on:
+  push:
+    branches: ["dev"]
+    paths:
+      - user-management/**"
+      - ".github/workflows/user-management-dev.yml"
+
+jobs:
+  build:
+    name: Build & Push Image
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: registry.digitalocean.com/plantya-registry/user-management-dev
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Build & test
+        working-directory: user-management
+        run: mvn -B clean verify
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DO_TOKEN }}
+
+      - name: Login DigitalOcean Registry
+        run: doctl registry login
+
+      - name: Build & Push Docker image
+        working-directory: user-management
+        run: |
+          docker build -t $IMAGE_NAME:$IMAGE_TAG .
+          docker push $IMAGE_NAME:$IMAGE_TAG
+
+  deploy:
+    name: Deploy to Kubernetes (Dev)
+    environment: dev
+    runs-on: ubuntu-22.04
+    needs: build
+
+    env:
+      NAMESPACE: plantya-dev
+      SERVICE_NAME: user-management
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: "v1.29.0"
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          cat <<EOF > ~/.kube/config
+          ${{ secrets.KUBECONFIG_DEV }}
+          EOF
+
+      - name: Verify cluster access
+        run: kubectl cluster-info
+
+      - name: Deploy Kubernetes manifests
+        run: |
+          envsubst < $SERVICE_NAME/kubernetes/dev/deployment.yaml | kubectl apply -n $NAMESPACE -f -
+
+      - name: Restart deployment
+        run: |
+          kubectl rollout restart deployment/$SERVICE_NAME -n $NAMESPACE
+
+      - name: Verify rollout
+        run: |
+          kubectl rollout status deployment/$SERVICE_NAME -n $NAMESPACE
