@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-management
+  namespace: plantya-dev
+  labels:
+    app: user-management
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-management
+  template:
+    metadata:
+      name: user-management
+      labels:
+        app: user-management
+    spec:
+      containers:
+        - name: user-management
+          image: registry.digitalocean.com/plantya-registry/user-management:${IMAGE_TAG}
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: user-management-config-map
+            - secretRef:
+                name: user-management-secret
+
+      
